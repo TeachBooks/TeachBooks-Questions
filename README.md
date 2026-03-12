@@ -57,6 +57,17 @@ The directive `question` has the following full MarkDown syntax for use, where `
 :::
 ````
 
+### Rendering
+
+The result of the `question` directive will be a `<div>` element containing, in order, the following elements (if provided/indicated):
+- An optional title with(out) a caption or just a caption.
+- Some text before the options/input fields.
+- The options/input fields.
+- Some text after the options/input fields.
+- Buttons for interaction.
+
+### Directive options
+
 Each of the options and placeholders will be shortly explained next:
 
 - `<title>`: Including a title is optional.
