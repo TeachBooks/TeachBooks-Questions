@@ -240,11 +240,11 @@ class QuestionDirective(SphinxDirective):
         # Add buttons
         button_count = 3 if node["show_answer"] else 2
         buttons = [
-            ("submit-button", "Submit answer(s)"),
+            ("submit-button", "<i class='fa-solid fa-clipboard-question'></i> Submit answer(s)"),
         ]
         if node["show_answer"]:
-            buttons.append(("show-button", "Show answer(s)"))
-        buttons.append(("reset-button", "Try again"))
+            buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
+        buttons.append(("reset-button", "<i class='fa-solid fa-repeat'></i> Try again"))
 
         self._add_button_section(node, node_id, buttons, node["show_answer"], button_count)
 
@@ -577,7 +577,7 @@ class QuestionDirective(SphinxDirective):
         buttons = []
         if node["show_answer"]:
             buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
-        buttons.append(("reset-button", "Try again"))
+        buttons.append(("reset-button", "<i class='fa-solid fa-repeat'></i> Try again"))
 
         self._add_button_section(node, node_id, buttons, node["show_answer"], button_count)
 
@@ -624,11 +624,11 @@ class QuestionDirective(SphinxDirective):
         # Add buttons
         button_count = 3 if node["show_answer"] else 2
         buttons = [
-            ("submit-button", "Submit answer(s)"),
+            ("submit-button", "<i class='fa-solid fa-clipboard-question'></i> Submit answer(s)"),
         ]
         if node["show_answer"]:
-            buttons.append(("show-button", "Show answer(s)"))
-        buttons.append(("reset-button", "Try again"))
+            buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
+        buttons.append(("reset-button", "<i class='fa-solid fa-repeat'></i> Try again"))
 
         self._add_button_section(node, node_id, buttons, node["show_answer"], button_count)
 
