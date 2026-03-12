@@ -308,7 +308,7 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 
 ````text
 ::::{question} Title
-    :admonition:
+:admonition:
 ---
 [x] This is an answer.
 > Which is also a correct answer.
@@ -318,6 +318,7 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 ````
 
 ::::{question} Title
+:admonition:
 ---
 [x] This is an answer.
 > Which is also a correct answer.
@@ -327,10 +328,12 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 
 *With admonition, with custom class*
 
+The custom CSS is included in this extension, so can be used if preferred.
+
 ````text
 ::::{question} Title
 :admonition:
-:class: question
+:class: question-box
 ---
 [x] This is an answer.
 > Which is also a correct answer.
@@ -340,6 +343,8 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 ````
 
 ::::{question} Title
+:admonition:
+:class: question-box
 ---
 [x] This is an answer.
 > Which is also a correct answer.
