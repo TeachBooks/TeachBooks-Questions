@@ -120,6 +120,8 @@ class QuestionDirective(SphinxDirective):
         """Format the title based on caption setting."""
         if no_caption:
             return title
+        if title.strip() == "":
+            return ""
         return f" ({title})"
             
     def _calculate_button_distribution(self, button_count: int) -> str:
