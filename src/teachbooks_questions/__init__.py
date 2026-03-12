@@ -112,9 +112,7 @@ class QuestionDirective(SphinxDirective):
         """Create a unique ID for the node."""
         if self.options.get("label"):
             return self.options["label"]
-        # Make docname safe for HTML IDs by replacing / and _ with -
-        docname = self.env.docname.replace("/", "-").replace("_", "-").lower()
-        return f"question-{docname}-{self.env.new_serialno('question')}"
+        return f"question-{self.env.new_serialno('question')}"
 
     def _format_title(self, title: str, no_caption: bool) -> str:
         """Format the title based on caption setting."""
