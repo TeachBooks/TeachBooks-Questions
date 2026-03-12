@@ -256,7 +256,7 @@ In this case always 3 columns will be shown.
 > Which is also a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is another answer.
-[X] This is yet another answer.
+[x] This is yet another answer.
 ---
 ::::
 ````
@@ -268,7 +268,7 @@ In this case always 3 columns will be shown.
 > Which is also a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is another answer.
-[X] This is yet another answer.
+[x] This is yet another answer.
 ---
 ::::
 
@@ -286,7 +286,7 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 > Which is also a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is another answer.
-[X] This is yet another answer.
+[x] This is yet another answer.
 ---
 ::::
 ````
@@ -298,7 +298,7 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 > Which is also a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is another answer.
-[X] This is yet another answer.
+[x] This is yet another answer.
 ---
 ::::
 
