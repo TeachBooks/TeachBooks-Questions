@@ -46,6 +46,7 @@ The directive `question` has the following full MarkDown syntax for use, where `
 :columns: <columns>
 :class: <class>
 :admonition:
+:nocaption:
 :show:
 
 <pre-questipn>
@@ -55,6 +56,13 @@ The directive `question` has the following full MarkDown syntax for use, where `
 <post-question>
 :::
 ````
+
+Each of the options and placeholders will be shortly explained next:
+
+- `<title>`: Including a title is optional.
+- `:label: <label>`: Adding a label is optional. Can be used for unnumbered internal references.
+- `:type: <type>`: Defines the type of the question. Available are `multiple-choice` and `short-answer`. If not given, _defaults_ to `multiple-choice`.
+- `:variant: <variant>`: Defines the variant within the type of the question. If not given, the default value for the type is selected. For the type `multiple-choice` the variants `single-select` (_default_) and `multiple-select` are available. For the type `short-answer` the variant `block` (_default_) is available.
 
 ## Documentation
 
