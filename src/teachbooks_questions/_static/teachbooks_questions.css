@@ -47,16 +47,29 @@ div.multiple-choice section.question-options div.sd-card.option {
 div.multiple-choice section.question-options div.sd-card.option div.sd-card-body {
   padding: 0.5rem;
 }
-div.multiple-choice section.question-options div.sd-card.option div.sd-card-body p:last-of-type {
-  margin-bottom: 0;
+
+div.multiple-choice.single-select section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
+  content: "\25E6 \00A0" !important;
+  font-size: 2rem; /* Pas dit getal aan om de cirkel te vergroten */
+  line-height: 1;  /* Voorkomt dat de regelhoogte verspringt */
 }
-div.multiple-choice section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
-  content: "○ " !important;
-  font-size: x-large !important;
+div.multiple-choice.single-select section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
+  content: "\2981 \00A0" !important;
+  font-size: 2rem; /* Pas dit getal aan om de cirkel te vergroten */
+  line-height: 1;  /* Voorkomt dat de regelhoogte verspringt */
 }
-div.multiple-choice section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
-  content: "● " !important;
-  font-size: x-large !important;
+
+div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
+  content: "\25FD " !important;
+}
+div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
+    content: "\25FE " !important;
+}
+html[data-theme="dark"] div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
+        content: "\25FE " !important;
+}
+html[data-theme="dark"]  div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
+  content: "\25FD " !important;
 }
 
 div.multiple-choice section.question-options div.sd-card.option:hover {
