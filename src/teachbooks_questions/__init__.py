@@ -240,7 +240,7 @@ class QuestionDirective(SphinxDirective):
         # Add buttons
         button_count = 3 if node["show_answer"] else 2
         buttons = [
-            ("submit-button", "<i class='fa-solid fa-clipboard-question'></i> Submit answer(s)"),
+            ("submit-button", "<i class='fa-solid fa-paper-plane'></i> Submit answer(s)"),
         ]
         if node["show_answer"]:
             buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
@@ -624,7 +624,7 @@ class QuestionDirective(SphinxDirective):
         # Add buttons
         button_count = 3 if node["show_answer"] else 2
         buttons = [
-            ("submit-button", "<i class='fa-solid fa-clipboard-question'></i> Submit answer(s)"),
+            ("submit-button", "<i class='fa-solid fa-paper-plane'></i> Submit answer(s)"),
         ]
         if node["show_answer"]:
             buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
