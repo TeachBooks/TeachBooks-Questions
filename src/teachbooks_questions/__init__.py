@@ -576,7 +576,7 @@ class QuestionDirective(SphinxDirective):
         button_count = 2 if node["show_answer"] else 1
         buttons = []
         if node["show_answer"]:
-            buttons.append(("show-button", "Show answer(s)"))
+            buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
         buttons.append(("reset-button", "Try again"))
 
         self._add_button_section(node, node_id, buttons, node["show_answer"], button_count)
