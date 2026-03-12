@@ -376,28 +376,124 @@ The custom CSS is included in this extension, so can be used if preferred.
 
 ### Show answer button
 
+*Multiple-choice single-select question*
+
 ````text
-::::{question} Title
-:admonition:
-:class: teachbooks-question
+::::{question} Multiple-choice Single-select
+:type: multiple-choice
+:variant: single-select
 :showanswer:
+
+Select a correct answer.
 ---
 [x] This is an answer.
 > Which is also a correct answer.
 [ ] This is an incorrect answer.
+[ ] This is the third answer.
+> :::{warning}
+That is not correct.
+:::
+[x] This is the correct answer.
 ---
+Did you find all correct answers?
 ::::
 ````
 
-::::{question} Title
-:admonition:
-:class: teachbooks-question
+::::{question} Multiple-choice Single-select
+:type: multiple-choice
+:variant: single-select
 :showanswer:
+
+Select a correct answer.
 ---
 [x] This is an answer.
 > Which is also a correct answer.
 [ ] This is an incorrect answer.
+[ ] This is the third answer.
+> :::{warning}
+That is not correct.
+:::
+[x] This is the correct answer.
 ---
+Did you find all correct answers?
+::::
+
+*Multiple-choice multiple-select question*
+
+````text
+::::{question} Multiple-choice Multiple-select
+:type: multiple-choice
+:variant: multiple-select
+:showanswer:
+
+Select a correct answer.
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is the third answer.
+> :::{warning}
+That is not correct.
+:::
+[x] This is the correct answer.
+---
+Did you find all correct answers?
+::::
+````
+
+::::{question} Multiple-choice Multiple-select
+:type: multiple-choice
+:variant: multiple-select
+:showanswer:
+
+Select a correct answer.
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is the third answer.
+> :::{warning}
+That is not correct.
+:::
+[x] This is the correct answer.
+---
+Did you find all correct answers?
+::::
+
+*Short-answer blocks question*
+
+````text
+::::{question} Short-answer blocks
+:type: short-answer
+:variant: blocks
+:showanswer:
+
+Fill in the correct answer in the input fields.
+---
+T[TeachBooks] The correct answer is _TeachBooks_:
+= Perfect!
+> Did you make a typo? Try again. Remember that the answer is case-sensitive.
+
+MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
+---
+What do you think?
+::::
+````
+
+::::{question} Short-answer blocks
+:type: short-answer
+:variant: blocks
+:showanswer:
+
+Fill in the correct answer in the input fields.
+---
+T[TeachBooks] The correct answer is _TeachBooks_:
+= Perfect!
+> Did you make a typo? Try again. Remember that the answer is case-sensitive.
+
+MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
+---
+What do you think?
 ::::
 
 ::::{include} README.md
