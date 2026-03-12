@@ -333,7 +333,7 @@ The custom CSS is included in this extension, so can be used if preferred.
 ````text
 ::::{question} Title
 :admonition:
-:class: question-box
+:class: question
 ---
 [x] This is an answer.
 > Which is also a correct answer.
@@ -344,7 +344,31 @@ The custom CSS is included in this extension, so can be used if preferred.
 
 ::::{question} Title
 :admonition:
-:class: question-box
+:class: question
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
+*Without admonition, with custom class*
+
+The custom CSS is included in this extension, so can be used if preferred.
+
+````text
+::::{question} Title
+:class: question
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question} Title
+:class: question
 ---
 [x] This is an answer.
 > Which is also a correct answer.
