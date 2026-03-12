@@ -73,7 +73,7 @@ html[data-theme="dark"]  div.multiple-choice.multiple-select section.question-op
 }
 
 div.multiple-choice section.question-options div.sd-card.option:hover {
-  background: var(--question-white);
+  background: var(--question-blue-hover);
   border-color: var(--question-gray-border);
   transform: translateY(-2px);
 }
