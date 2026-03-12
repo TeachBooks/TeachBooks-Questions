@@ -91,6 +91,8 @@ class QuestionDirective(SphinxDirective):
         node["ids"] = [node_id]
         
         # Add title if provided
+        if not self.arguments:
+            self.arguments = [" "]
         if self.arguments:
             title_text = self._format_title(self.arguments[0], no_caption)
             textnodes, _ = self.state.inline_text(title_text, self.lineno)
@@ -656,14 +658,6 @@ def depart_question_node(self, node: question_node) -> None:
         if idx >= 0:
             element = '<span class="caption-number">Question </span>'
             self.body.insert(idx + 1, element)
-        else:
-            # no title found, so add somewhere else
-            search_str = f'<span id="{node_id}"></span>'
-            idx = _find_last_index(self.body, search_str)
-            if idx >= 0:
-                element = '<span class="caption-number">Question</span>'
-                self.body.insert(idx + 1, element)
-
     
     self.body.append("</div>")
 
