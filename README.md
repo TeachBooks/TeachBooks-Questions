@@ -48,7 +48,7 @@ The directive `question` has the following full MarkDown syntax for use, where `
 :class: <class>
 :admonition:
 :nocaption:
-:show:
+:showanswer:
 
 <pre-question>
 ---
@@ -79,7 +79,7 @@ Each of the options and placeholders will be shortly explained next:
 - `:class: <class>`: The classes to be added to the class list of the `div` element for styling purposes.
 - `:admonition:` If included, `admonition` will be added to the classes of the containing `<div>`. Can also be done through the `:class:` option.
 - `:nocaption:` If included, no caption will be added to the question. By default, a caption is added with the text "Question". This option can be used to hide the caption. If also no title is provided, the question will have neither a title nor a caption shown. If a title is provided, the title will be shown without surrounding brackets.
-- `:show:`: If included, a button will be added to show the correct answer(s) and related feedback.
+- `:showanswer:`: If included, a button will be added to show the correct answer(s) and related feedback.
 - `<pre-question>`: Optional content to be included before the options/input fields. Will be parsed, so nesting of elements is possible.
 - `<question>`: Code that defines the content of the options/input fields, including (in)correct answers and feedback. See [Syntax for multiple-choice questions](#syntax-for-multiple-choice-questions) and [Syntax for short-answer blocks questions](#syntax-for-short-answer-blocks-questions). Everything between the first `---` and the second `---` is considered part of this part of the code.
 - `<post-question>`: Optional content to be included after the options/input fields. Will be parsed, so nesting of elements is possible.
