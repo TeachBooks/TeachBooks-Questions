@@ -304,6 +304,8 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 
 ### Class and admonition
 
+The custom CSS is included in this extension, so can be used if preferred.
+
 *With admonition, without custom class*
 
 ````text
@@ -327,8 +329,6 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 ::::
 
 *With admonition, with custom class*
-
-The custom CSS is included in this extension, so can be used if preferred.
 
 ````text
 ::::{question} Title
@@ -354,8 +354,6 @@ The custom CSS is included in this extension, so can be used if preferred.
 
 *Without admonition, with custom class*
 
-The custom CSS is included in this extension, so can be used if preferred.
-
 ````text
 ::::{question} Title
 :class: question
@@ -369,6 +367,32 @@ The custom CSS is included in this extension, so can be used if preferred.
 
 ::::{question} Title
 :class: question
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
+### Show answer button
+
+````text
+::::{question} Title
+:admonition:
+:class: question
+:showanswer:
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question} Title
+:admonition:
+:class: question
+:showanswer:
 ---
 [x] This is an answer.
 > Which is also a correct answer.
