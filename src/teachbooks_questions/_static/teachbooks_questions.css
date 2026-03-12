@@ -208,9 +208,6 @@ div.short-answer.blocks section.question-options div.sd-card-body.input textarea
 div.short-answer.blocks section.question-options div.sd-card:has(textarea.question-option-input:focus) {
     border-color: var(--question-blue);
 }
-div.short-answer.blocks section.question-options div.sd-card-body.input textarea.question-option-input.show-answer {
-    background-color: var(--question-green);
-}
 div.short-answer.blocks section.question-options div.sd-card-body.input textarea.question-option-input::placeholder {
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
@@ -248,9 +245,6 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
 }
 div.short-answer.blocks section.question-options div.sd-card:has(math-field.question-option-input:focus) {
     border-color: var(--question-blue);
-}
-div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input.show-answer {
-    background-color: var(--question-green);
 }
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(placeholder) {
     color: var(--sd-color-card-text);

@@ -171,9 +171,8 @@
       const isCorrect = !!feedbackSection && feedbackSection.classList.contains('correct');
 
       footer.classList.remove('correct', 'incorrect');
-      body.classList.remove('selected', 'correct', 'incorrect');
+      body.classList.remove('correct', 'incorrect');
       footer.classList.add(isCorrect ? 'correct' : 'incorrect');
-      body.classList.add(isCorrect ? 'correct' : 'incorrect');
     });
 
     clearOverallFeedback(questionDiv);
