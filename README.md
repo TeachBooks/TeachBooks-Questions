@@ -178,4 +178,6 @@ This tool's repository is stored on [GitHub](https://github.com/TeachBooks/Teach
 - Add a variant `fill-in-the-gaps` to the type `short-answer`
 - Add a dropdown mode for short-answer
 - Add a javascript mode for short-answer
+- Configuration options
+- i18n
 - ...
