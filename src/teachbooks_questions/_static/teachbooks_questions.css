@@ -44,6 +44,12 @@ section.question-options div.sd-card.option {
 div.multiple-choice section.question-options div.sd-card.option {
   cursor: pointer;
 }
+div.multiple-choice section.question-options div.sd-card.option div.sd-card-body {
+  padding: 0.5rem;
+}
+div.multiple-choice section.question-options div.sd-card.option div.sd-card-body p:last-of-type {
+  margin-bottom: 0;
+}
 
 div.multiple-choice section.question-options div.sd-card.option:hover {
   background: var(--question-white);
