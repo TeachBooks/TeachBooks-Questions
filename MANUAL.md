@@ -71,7 +71,48 @@ That is not correct.
 Did you find all correct answers?
 ::::
 
-To be written.
+
+
+### Multiple-choice multiple-select question
+
+````text
+::::{question} Multiple-choice Multiple-select
+:type: multiple-choice
+:variant: multiple-select
+
+Select a correct answer.
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is third answer.
+> :::{warning}
+That is not correct.
+:::
+[x] This is the correct answer.
+---
+Did you find all correct answers?
+::::
+````
+
+::::{question} Multiple-choice Multiple-select
+:type: multiple-choice
+:variant: multiple-select
+
+Select a correct answer.
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is third answer.
+> :::{warning}
+That is not correct.
+:::
+[x] This is the correct answer.
+---
+Did you find all correct answers?
+::::
+
 
 ::::{include} README.md
 :start-after: "<!-- Start contribute -->"

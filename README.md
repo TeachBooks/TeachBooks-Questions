@@ -104,7 +104,7 @@ and to define a single incorrect option, add code of the form
 
 The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same option.
 
-The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect. Try again.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
+The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
 
 A short example of allowed code:
 
@@ -161,7 +161,7 @@ The placeholder `<Label>` is optional and if provided will be place above the in
 
 A line starting with `= ` is considered the start of the feedback if a correct answer is entered. `<CorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `= ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same feedback. If not provided, the default `Correct!` will be substituted.
 
-A line starting with `> ` is considered the start of the feedback if an incorrect answer is entered. `<IncorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same feedback. If not provided, the default `Incorrect. Try again.` will be substituted.
+A line starting with `> ` is considered the start of the feedback if an incorrect answer is entered. `<IncorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same feedback. If not provided, the default `Incorrect.` will be substituted.
 
 If between two lines starting with `<Mode>[Answer] ` multiple instances of correct feedback (`= `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of incorrect feedback (`> `) are found, these will be concatenated.
 

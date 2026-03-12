@@ -19,10 +19,10 @@ class QuestionDirective(SphinxDirective):
     }
     FEEDBACKS = {
         "multiple-choice": {
-            "single-select": {True: "Correct!", False: "Incorrect. Try again."},
-            "multiple-select": {True: "Correct!", False: "Incorrect. Try again."},
+            "single-select": {True: "Correct!", False: "Incorrect."},
+            "multiple-select": {True: "Correct!", False: "Incorrect."},
         },
-        "short-answer": {"blocks": {True: "Correct!", False: "Incorrect. Try again."}},
+        "short-answer": {"blocks": {True: "Correct!", False: "Incorrect."}},
     }
     COLUMNS = {
         "multiple-choice": {"single-select": "1 1 2 2", "multiple-select": "1 1 2 2"},
