@@ -23,6 +23,7 @@ This section is useful for user type 3-5.
 ````
 
 ::::{include} README.md
+:start-after: "<!-- Start documentation -->"
 :end-before: "## Documentation"
 ::::
 
