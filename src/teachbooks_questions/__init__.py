@@ -117,7 +117,7 @@ class QuestionDirective(SphinxDirective):
     def _format_title(self, title: str, no_caption: bool) -> str:
         """Format the title based on caption setting."""
         if no_caption:
-            return f" {title}"
+            return title
         return f" ({title})"
             
     def _calculate_button_distribution(self, button_count: int) -> str:
@@ -656,6 +656,14 @@ def depart_question_node(self, node: question_node) -> None:
         if idx >= 0:
             element = '<span class="caption-number">Question </span>'
             self.body.insert(idx + 1, element)
+        else:
+            # no title found, so add somewhere else
+            search_str = f'<span id="{node_id}">'
+            idx = _find_last_index(self.body, search_str)
+            if idx >= 0:
+                element = '<span class="caption-number">Question</span>'
+                self.body.insert(idx + 1, element)
+
     
     self.body.append("</div>")
 
