@@ -172,3 +172,10 @@ Examples for this extension are available in the [TeachBooks manual](https://tea
 ## Contribute
 
 This tool's repository is stored on [GitHub](https://github.com/TeachBooks/TeachBooks-Questions). If you'd like to contribute, you can create a fork and open a pull request on the [GitHub repository](https://github.com/TeachBooks/TeachBooks-Questions).
+
+## Stuff we would like to add in the future
+
+- Add a variant `fill-in-the-gaps` to the type `short-answer`
+- Add a dropdown mode for short-answer
+- Add a javascript mode for short-answer
+- ...
