@@ -9,7 +9,7 @@ description = "A Sphinx extension to create and include multiple-choice and shor
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Dennis den Ouden-van der Horst", email = "d.denouden-vanderhorst@tudelft.nl" 
+    { name = "Dennis den Ouden-van der Horst", email = "d.denouden-vanderhorst@tudelft.nl" }
 ]
 dependencies = [
     "sphinx"
