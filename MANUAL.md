@@ -145,6 +145,33 @@ MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
 What do you think?
 ::::
 
+### Caption and title
+
+*Without caption, with title:*
+
+````text
+::::{question} Multiple-choice Multiple-select
+:nocaption:
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question} Multiple-choice Multiple-select
+:nocaption:
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
+
 ::::{include} README.md
 :start-after: "<!-- Start contribute -->"
 ::::
