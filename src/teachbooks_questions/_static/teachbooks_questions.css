@@ -243,3 +243,19 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }
+
+
+
+/* Question-box admonition */
+  div.admonition.question-box {
+    border-color: var(--pst-color-secondary) !important;
+    background-color: color-mix(in rgb,var(--pst-color-secondary) 5%,transparent) !important;
+  }
+   div.admonition.question-box > .admonition-title {
+    background-color: color-mix(in rgb,var(--pst-color-secondary) 10%,transparent) !important;
+  }
+   div.admonition.question-box .admonition-title::after {
+    color: var(--pst-color-secondary) !important;
+    font-weight: 400 !important;
+    content: "\f4ad" !important;
+  }

@@ -302,6 +302,50 @@ In this case 4 columns will be shown for the largest screens, but for smaller sc
 ---
 ::::
 
+### Class and admonition
+
+*With admonition, without custom class*
+
+````text
+::::{question} Title
+    :admonition:
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question} Title
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
+*With admonition, with custom class*
+
+````text
+::::{question} Title
+:admonition:
+:class: question
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question} Title
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
 
 ::::{include} README.md
 :start-after: "<!-- Start contribute -->"
