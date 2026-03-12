@@ -147,6 +147,28 @@ What do you think?
 
 ### Caption and title
 
+*With caption, with title:*
+
+````text
+::::{question} Title
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question} Title
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
 *Without caption, with title:*
 
 ````text
