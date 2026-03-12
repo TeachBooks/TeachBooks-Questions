@@ -150,7 +150,7 @@ What do you think?
 *Without caption, with title:*
 
 ````text
-::::{question} Multiple-choice Multiple-select
+::::{question} Title
 :nocaption:
 
 ---
@@ -161,8 +161,55 @@ What do you think?
 ::::
 ````
 
-::::{question} Multiple-choice Multiple-select
+::::{question} Title
 :nocaption:
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
+
+*Without caption, without title:*
+
+````text
+::::{question}
+:nocaption:
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question}
+:nocaption:
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+
+*With caption, without title:*
+
+````text
+::::{question}
+
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+---
+::::
+````
+
+::::{question}
 
 ---
 [x] This is an answer.
