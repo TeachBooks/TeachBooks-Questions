@@ -166,9 +166,9 @@ If between two lines starting with `<Mode>[Answer] ` multiple instances of corre
 
 ## Documentation
 
-Further documentation for this extension is available in the [TeachBooks manual](https://teachbooks.io/manual/_git/github.com_TeachBooks_Sphinx-Metadata-Figure/main/MANUAL.html).
+Examples for this extension are available in the [TeachBooks manual](https://teachbooks.io/manual/_git/github.com_TeachBooks_TeachBooks-Questions/main/MANUAL.html).
 
 <!-- Start contribute -->
 ## Contribute
 
-This tool's repository is stored on [GitHub](https://github.com/TeachBooks/Sphinx-Metadata-Figure). If you'd like to contribute, you can create a fork and open a pull request on the [GitHub repository](https://github.com/TeachBooks/Sphinx-Metadata-Figure).
+This tool's repository is stored on [GitHub](https://github.com/TeachBooks/TeachBooks-Questions). If you'd like to contribute, you can create a fork and open a pull request on the [GitHub repository](https://github.com/TeachBooks/TeachBooks-Questions).
