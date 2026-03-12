@@ -128,8 +128,22 @@ T[TeachBooks] The correct answer is _TeachBooks_:
 MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
 ---
 What do you think?
+::::
 ````
 
+::::{question} Short-answer blocks
+:type: short-answer
+:variant: blocks
+Fill in the correct answer in the input fields.
+---
+T[TeachBooks] The correct answer is _TeachBooks_:
+= Perfect!
+> Did you make a typo? Try again. Remember that the answer is case-sensitive.
+
+MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
+---
+What do you think?
+::::
 
 ::::{include} README.md
 :start-after: "<!-- Start contribute -->"
