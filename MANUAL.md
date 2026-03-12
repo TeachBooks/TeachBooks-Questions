@@ -240,6 +240,68 @@ What do you think?
 ---
 ::::
 
+### Columns
+
+*Single column specified*
+
+Resize the window to see the effect of the columns.
+
+In this case always 3 columns will be shown.
+
+````text
+::::{question} Title
+:columns: 3
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is another answer.
+[X] This is yet another answer.
+---
+::::
+````
+
+::::{question} Title
+:columns: 3
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is another answer.
+[X] This is yet another answer.
+---
+::::
+
+*Fours columns specified*
+
+Resize the window to see the effect of the columns.
+
+In this case 4 columns will be shown for the largest screens, but for smaller screens the number of columns will be reduced to fit the screen, first going to 3 columns, then 2 and finally 1.
+
+````text
+::::{question} Title
+:columns: 1 2 3 4
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is another answer.
+[X] This is yet another answer.
+---
+::::
+````
+
+::::{question} Title
+:columns: 1 2 3 4
+---
+[x] This is an answer.
+> Which is also a correct answer.
+[ ] This is an incorrect answer.
+[ ] This is another answer.
+[X] This is yet another answer.
+---
+::::
+
 
 ::::{include} README.md
 :start-after: "<!-- Start contribute -->"
