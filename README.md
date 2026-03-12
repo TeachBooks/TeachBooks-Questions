@@ -80,10 +80,43 @@ Each of the options and placeholders will be shortly explained next:
 - `:nocaption:` If included, no caption will be added to the question. By default, a caption is added with the text "Question". This option can be used to hide the caption. If also no title is provided, the question will have neither a title nor a caption shown. If a title is provided, the title will be shown without surrounding brackets.
 - `:show:`: If included, a button will be added to show the correct answer.
 - `<pre-question>`: Optional content to be included before the options/input fields. Will be parsed, so nesting of elements is possible.
-- `<question>`: Code that defines the content of the options/input fields, including (in)correct answers and feedback. See [Syntax for multiple-choice questions](#syntax-for-multiple-choice-questions) and [Syntax for short-answer blocks questions](#syntax-for-short-answer-blocks-questions)
+- `<question>`: Code that defines the content of the options/input fields, including (in)correct answers and feedback. See [Syntax for multiple-choice questions](#syntax-for-multiple-choice-questions) and [Syntax for short-answer blocks questions](#syntax-for-short-answer-blocks-questions). Everything between the first `---` and the second `---` is considered part of this part of the code.
 - `<post-question>`: Optional content to be included after the options/input fields. Will be parsed, so nesting of elements is possible.
 
 ### Syntax for multiple-choice questions
+
+The code inside `<question>` for multiple-choice questions is for both variants the same.
+
+To define a single correct option, add code of the form
+
+````text
+[x] <Option>
+> <Feedback>
+````
+
+and to define a single incorrect option, add code of the form
+
+````text
+[ ] <Option>
+> <Feedback>
+````
+
+The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles and directives. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same option.
+
+The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles and directives. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same option.
+
+A short example of allowed code:
+
+````text
+[x] Answer A
+
+This answer has several lines and is also correct.
+
+> :::{note}
+:name: feedback-note
+You can include admonitions.
+:::
+````
 
 ### Syntax for short-answer blocks questions
 
