@@ -658,7 +658,7 @@ def depart_question_node(self, node: question_node) -> None:
             self.body.insert(idx + 1, element)
         else:
             # no title found, so add somewhere else
-            search_str = f'<span id="{node_id}">'
+            search_str = f'<span id="{node_id}"></span>'
             idx = _find_last_index(self.body, search_str)
             if idx >= 0:
                 element = '<span class="caption-number">Question</span>'
