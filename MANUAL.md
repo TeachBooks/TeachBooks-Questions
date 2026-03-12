@@ -231,7 +231,7 @@ What do you think?
 ::::
 ````
 
-::::{question}
+::::{question} 
 
 ---
 [x] This is an answer.
