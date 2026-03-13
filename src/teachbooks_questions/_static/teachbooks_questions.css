@@ -48,38 +48,25 @@ div.multiple-choice section.question-options div.sd-card.option div.sd-card-body
   padding: 0.5rem;
 }
 
-div.multiple-choice.single-select section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
-  content: "\25E6 \00A0" !important;
-  font-size: 2rem; /* Pas dit getal aan om de cirkel te vergroten */
-  line-height: 1;  /* Voorkomt dat de regelhoogte verspringt */
-}
-div.multiple-choice.single-select section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
-  content: "\2981 \00A0" !important;
-  font-size: 2rem; /* Pas dit getal aan om de cirkel te vergroten */
-  line-height: 1;  /* Voorkomt dat de regelhoogte verspringt */
-}
-
-div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
-  content: "\25FD " !important;
-}
-div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
-    content: "\25FE " !important;
-}
-html[data-theme="dark"] div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body:not(.selected) p:first-of-type::before {
-        content: "\25FE " !important;
-}
-html[data-theme="dark"]  div.multiple-choice.multiple-select section.question-options div.sd-card.option div.sd-card-body.selected p:first-of-type::before {
-  content: "\25FD " !important;
-}
-
 div.multiple-choice section.question-options div.sd-card.option:hover {
   background: var(--question-blue-hover);
   border-color: var(--question-gray-border);
   transform: translateY(-2px);
 }
-
 div.multiple-choice section.question-options div.sd-card.option:has(div.sd-card-body.selected) {
     transform: translateY(2px) translateX(2px);
+}
+div.multiple-choice section.question-options div.sd-card.option div.sd-card-body.selected svg.off {
+    display: none;
+}
+div.multiple-choice section.question-options div.sd-card.option div.sd-card-body.selected svg.on {
+    display: inline;
+}
+div.multiple-choice section.question-options div.sd-card.option div.sd-card-body:not(.selected) svg.off {
+    display: inline;
+}
+div.multiple-choice section.question-options div.sd-card.option div.sd-card-body:not(.selected) svg.on {
+    display: none;
 }
 
 /* Styling of the feedback in the footers */

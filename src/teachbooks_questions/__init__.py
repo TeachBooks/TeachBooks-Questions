@@ -536,6 +536,12 @@ class QuestionDirective(SphinxDirective):
         self.state.nested_parse(cards_markup, self.content_offset, options_section)
         node += options_section
 
+        # icon style
+        if node["variant"] == "single-select":
+            icon = "circle"
+        else:  # multiple-select
+            icon = "square"
+
         # Populate card content
         current_card = -1
         for container in options_section.findall(nodes.container):
@@ -544,6 +550,7 @@ class QuestionDirective(SphinxDirective):
             if "sd-card-body" in card_classes:
                 current_card += 1
                 option = options[current_card]
+                logger.info(f"Rendering option {current_card + 1} for question {node_id} with content:\n{option['content']}",color="blue")
                 option_section = nodes.section(
                     classes=["question-option"],
                     ids=[f"{node_id}-option-{current_card}"]
@@ -551,8 +558,17 @@ class QuestionDirective(SphinxDirective):
                 self.state.nested_parse(
                     option["content"], self.content_offset, option_section
                 )
+                first_child = option_section[0] if option_section else None
+                icon_html = f"<i class='fa-regular fa-{icon} off'></i><i class='fa-solid fa-{icon}-check on'></i>&nbsp;"
+                if first_child and isinstance(first_child, nodes.paragraph):
+                    # add an icon to the first paragraph
+                    first_child.insert(0, nodes.raw(icon_html, icon_html, format="html"))
+                else:
+                    # add the icon in a new div at the top of the option section
+                    icon_html = "<div class='option-icon'>" + icon_html + "</div>"
+                    option_section.insert(0, nodes.raw(icon_html, icon_html, format="html"))
+                logger.info(f"Finished rendering option {current_card + 1} for question {node_id}:\n{option_section.pformat()}",color="green")
                 container += option_section
-                
             elif "sd-card-footer" in card_classes:
                 option = options[current_card]
                 feedback_class = "correct" if option["is_correct"] else "incorrect"
