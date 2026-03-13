@@ -550,7 +550,6 @@ class QuestionDirective(SphinxDirective):
             if "sd-card-body" in card_classes:
                 current_card += 1
                 option = options[current_card]
-                logger.info(f"Rendering option {current_card + 1} for question {node_id} with content:\n{option['content']}",color="blue")
                 option_section = nodes.section(
                     classes=["question-option"],
                     ids=[f"{node_id}-option-{current_card}"]
@@ -567,7 +566,6 @@ class QuestionDirective(SphinxDirective):
                     # add the icon in a new div at the top of the option section
                     icon_html = "<div class='option-icon'>" + icon_html + "</div>"
                     option_section.insert(0, nodes.raw(icon_html, icon_html, format="html"))
-                logger.info(f"Finished rendering option {current_card + 1} for question {node_id}:\n{option_section.pformat()}",color="green")
                 container += option_section
             elif "sd-card-footer" in card_classes:
                 option = options[current_card]
