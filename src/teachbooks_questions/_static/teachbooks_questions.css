@@ -271,7 +271,12 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
     color: #e89217;
   }
 
-div.multiple-choice div.sd-card .sd-card-body, div.multiple-choice .sd-card .sd-card-footer, div.multiple-choice .sd-card .sd-card-header,
-div.short-answer div.sd-card .sd-card-body, div.short-answer .sd-card .sd-card-footer, div.short-answer .sd-card .sd-card-header {
+div.multiple-choice .sd-card .sd-card-header,
+div.short-answer .sd-card .sd-card-header,
+div.multiple-choice div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
+div.short-answer div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
+div.multiple-choice .sd-card .sd-card-footer:not(.correct, .incorrect),
+div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect)
+ {
     background-color: transparent !important;
 }
