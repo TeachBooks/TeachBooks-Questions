@@ -270,3 +270,8 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
    div:not(.admonition).teachbooks-question > .admonition-title {
     color: #e89217;
   }
+
+div.multiple-choice div.sd-card .sd-card-body, div.multiple-choice .sd-card .sd-card-footer,
+div.short-answer div.sd-card .sd-card-body, div.short-answer .sd-card .sd-card-footer {
+    background-color: none !important;
+}
