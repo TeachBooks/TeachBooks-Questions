@@ -10,7 +10,8 @@
     --question-gray-border: #d0d0d0;
     --question-white: #eeeeee;
     --question-white-border: #c6c6c6;
-    --_placeholder-color: var(--pst-color-text-base);
+    --question-yellow: #f7e9c4;
+    --question-yellow-hover: #e6d7b0;
 }
 
 html[data-theme="dark"] {
@@ -24,6 +25,8 @@ html[data-theme="dark"] {
     --question-gray-border: #555555;
     --question-white: #666666;
     --question-white-border: #777777;
+    --question-yellow: #d6b55a;
+    --question-yellow-hover: #eac96e;
 }
 
 /* General style for the question options */
@@ -127,17 +130,22 @@ section.question-buttons div.sd-card.show-button {
     
     /* Button‑like visuals */
     border: 2px solid var(--question-gray-border);
-    background-color: var(--question-blue);
+    background-color: var(--question-yellow);
     transition: 
         background 0.15s ease,
         border-color 0.15s ease,
         box-shadow 0.15s ease,
         transform 0.1s ease;
 }
+html[data-theme="dark"] section.question-buttons div.sd-card.submit-button,
+html[data-theme="dark"] section.question-buttons div.sd-card.reset-button,
+html[data-theme="dark"] section.question-buttons div.sd-card.show-button {
+    color: rgb(34, 40, 50);
+}
 section.question-buttons div.sd-card.submit-button:hover,
 section.question-buttons div.sd-card.reset-button:hover,
 section.question-buttons div.sd-card.show-button:hover {
-  background: var(--question-blue-hover);
+  background: var(--question-yellow-hover);
   border-color: var(--question-white-border);
   transform: translateY(-2px);
 }
