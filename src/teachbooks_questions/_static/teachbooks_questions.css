@@ -190,7 +190,7 @@ div.short-answer.blocks section.question-options div.sd-card-body.input textarea
     min-height: 6rem;         /* initial size; adjust to taste */
     resize: vertical;         /* allow vertical resize only */
     overflow-y: auto;         /* vertical scrollbar if needed */
-    overflow-x: hidden;       /* no horizontal scrollbar */
+    overflow-x: auto;         /* horizontal scrollbar if needed */
     border: none;             /* optional: match card’s border instead */
     padding: .6rem .8rem;     /* optional */
     font: inherit;
@@ -216,12 +216,16 @@ div.short-answer.blocks section.question-options div.sd-card-footer.incorrect se
 }
 div.short-answer.blocks section.question-options div.sd-card-body.input section.question-option-answer {
     display: none;
+    overflow-x: auto;         /* enable horizontal scrolling when shown */
 }
 /* math stuff */
+div.short-answer.blocks section.question-options div.sd-card-body.input {
+    overflow-x: auto;         /* enable horizontal scrolling */
+}
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input {
     display: inline-block;           /* avoid inline quirks */
     box-sizing: border-box;   /* include padding/border in width/height */
-    width: 100%;
+    min-width: 100%;          /* at least full width, but can grow */
     height: 100%;             /* match container if container has a height */
     min-height: 6rem;         /* initial size; adjust to taste */
     border: none;             /* optional: match card’s border instead */
