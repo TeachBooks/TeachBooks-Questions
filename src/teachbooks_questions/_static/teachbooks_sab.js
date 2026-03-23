@@ -236,6 +236,50 @@ function tunedSimilarity(student, correct) {
 }
 
 (function () {
+  function configureMathFieldHorizontalScroll(mathField) {
+    if (!mathField) {
+      return;
+    }
+
+    const apply = () => {
+      const shadow = mathField.shadowRoot;
+      if (!shadow) {
+        return false;
+      }
+
+      const container = shadow.querySelector('.ML__container, [part="container"]');
+      const content = shadow.querySelector('.ML__content, [part="content"]');
+
+      if (container) {
+        container.style.overflowX = 'auto';
+        container.style.overflowY = 'hidden';
+        container.style.webkitOverflowScrolling = 'touch';
+        container.style.scrollbarGutter = 'stable';
+      }
+
+      if (content) {
+        content.style.overflowX = 'auto';
+        content.style.overflowY = 'hidden';
+        content.style.whiteSpace = 'nowrap';
+        content.style.minWidth = '100%';
+        content.style.width = 'max-content';
+        content.style.webkitOverflowScrolling = 'touch';
+      }
+
+      return Boolean(content);
+    };
+
+    if (!apply()) {
+      requestAnimationFrame(apply);
+    }
+  }
+
+  function configureAllMathFields() {
+    document
+      .querySelectorAll('math-field.question-option-input')
+      .forEach((mathField) => configureMathFieldHorizontalScroll(mathField));
+  }
+
   function getQuestionDiv(element) {
     return element.closest('div.short-answer.blocks');
   }
@@ -475,6 +519,13 @@ function tunedSimilarity(student, correct) {
             radius = parts[1].trim();
             mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - ' + centre + '| \\leq ' + radius + '\\cdot |' + centre + '|';
           }
+
+          configureMathFieldHorizontalScroll(mathField);
+          requestAnimationFrame(() => {
+            if (typeof mathField.executeCommand === 'function') {
+              mathField.executeCommand('scrollToStart');
+            }
+          });
         }
       }
     });
@@ -528,4 +579,10 @@ function tunedSimilarity(student, correct) {
       handleFocus(event.target);
     }
   }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', configureAllMathFields, { once: true });
+  } else {
+    configureAllMathFields();
+  }
 })();
