@@ -221,17 +221,24 @@ div.short-answer.blocks section.question-options div.sd-card-body.input section.
 /* math stuff */
 div.short-answer.blocks section.question-options div.sd-card-body.input {
     overflow-x: auto;         /* enable horizontal scrolling */
+    min-height: 6rem;         /* match math-field minimum */
 }
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input {
-    display: inline-block;           /* avoid inline quirks */
+    display: block;                  /* change from inline-block */
     box-sizing: border-box;   /* include padding/border in width/height */
-    min-width: 100%;          /* at least full width, but can grow */
+    width: 100%;              /* host takes card width */
     height: 100%;             /* match container if container has a height */
     min-height: 6rem;         /* initial size; adjust to taste */
-    border: none;             /* optional: match card’s border instead */
+    border: none;             /* optional: match card's border instead */
     padding: .6rem .8rem;     /* optional */
     font: inherit;
     background-color: var(--question-white);
+}
+div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(content) {
+    overflow-x: auto;         /* MathLive internal content area */
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
 }
 /* math-field icon colors (shadow DOM) */
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(virtual-keyboard-toggle),
