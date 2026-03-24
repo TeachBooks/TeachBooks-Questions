@@ -279,6 +279,21 @@ function tunedSimilarity(student, correct) {
             flex: 0 0 auto;
           }
 
+          .ML__toggles {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.25rem;
+            white-space: nowrap;
+          }
+
+          .ML__virtual-keyboard-toggle,
+          .ML__menu-toggle {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+          }
+
           /* Keep scrolling possible on touch even when unfocused */
           :host(:not(:focus)) .ML__container,
           :host(:not(:focus-within)) .ML__container {
@@ -305,6 +320,7 @@ function tunedSimilarity(student, correct) {
 
       const container = shadow.querySelector('.ML__container, [part="container"]');
       const content = shadow.querySelector('.ML__content, [part="content"]');
+      const toggles = shadow.querySelector('.ML__toggles');
 
       if (container) {
         container.style.overflowX = 'hidden';
@@ -321,6 +337,13 @@ function tunedSimilarity(student, correct) {
         content.style.webkitOverflowScrolling = 'touch';
         content.style.scrollbarGutter = 'stable';
         content.style.scrollbarWidth = 'auto';
+      }
+
+      if (toggles) {
+        toggles.style.display = 'inline-flex';
+        toggles.style.flexDirection = 'row';
+        toggles.style.alignItems = 'center';
+        toggles.style.gap = '0.25rem';
       }
 
       return Boolean(content);
@@ -456,6 +479,20 @@ function tunedSimilarity(student, correct) {
     }
   }
 
+  function setReadOnlyState(textArea, mathField, readOnly) {
+    if (textArea) {
+      textArea.readOnly = readOnly;
+    }
+    if (mathField) {
+      mathField.readOnly = readOnly;
+      if (readOnly) {
+        mathField.setAttribute('read-only', '');
+      } else {
+        mathField.removeAttribute('read-only');
+      }
+    }
+  }
+
   function handleResetClick(resetButton) {
     const questionDiv = getQuestionDiv(resetButton);
     if (!questionDiv) {
@@ -480,6 +517,7 @@ function tunedSimilarity(student, correct) {
           mathField.value = '';
           mathField.classList.remove('show-answer');
         }
+        setReadOnlyState(textArea, mathField, false);
       });
     }
   }
@@ -490,14 +528,17 @@ function tunedSimilarity(student, correct) {
       return;
     }
 
-    // Clear any textareas with show-answer class
-    document.querySelectorAll('textarea.question-option-input.show-answer').forEach(function (ta) {
+    // Clear show-answer mode in this question before checking submitted answers
+    questionDiv.querySelectorAll('textarea.question-option-input.show-answer').forEach(function (ta) {
       ta.value = '';
       ta.classList.remove('show-answer');
+      ta.readOnly = false;
     });
-    document.querySelectorAll('math-field.question-option-input.show-answer').forEach(function (ta) {
-      ta.value = '';
-      ta.classList.remove('show-answer');
+    questionDiv.querySelectorAll('math-field.question-option-input.show-answer').forEach(function (mf) {
+      mf.value = '';
+      mf.classList.remove('show-answer');
+      mf.readOnly = false;
+      mf.removeAttribute('read-only');
     });
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
@@ -556,6 +597,7 @@ function tunedSimilarity(student, correct) {
       if (mathField) {
         mathField.classList.add('show-answer');
       }
+      setReadOnlyState(textArea, mathField, true);
 
       if (answerSection) {
         if (textArea) {
@@ -593,6 +635,18 @@ function tunedSimilarity(student, correct) {
   }
 
   function handleFocus(element) {
+    // In show-answer mode, focusing should not reset content;
+    // users should leave this mode via Try again (or Submit).
+    if (element.classList && element.classList.contains('show-answer')) {
+      return;
+    }
+    if (element.tagName === 'TEXTAREA' && element.readOnly) {
+      return;
+    }
+    if (element.tagName === 'MATH-FIELD' && (element.readOnly || element.hasAttribute('read-only'))) {
+      return;
+    }
+
     // get the parent question div
     const questionDiv = getQuestionDiv(element);
     if (!questionDiv) {
