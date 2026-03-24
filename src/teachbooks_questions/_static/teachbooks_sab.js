@@ -247,30 +247,80 @@ function tunedSimilarity(student, correct) {
         return false;
       }
 
+      // Add internal styles once: MathLive renders in shadow DOM, so host CSS is not enough.
+      let styleTag = shadow.querySelector('style[data-tb-visible-scrollbar]');
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.setAttribute('data-tb-visible-scrollbar', '1');
+        styleTag.textContent = `
+          .ML__container,
+          [part="container"] {
+            overflow-x: scroll !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
+          }
+
+          .ML__content,
+          [part="content"] {
+            overflow: visible !important;
+            white-space: nowrap !important;
+            width: max-content !important;
+            min-width: 100% !important;
+          }
+
+          /* Keep scrolling possible on touch even when unfocused */
+          :host(:not(:focus)) .ML__container,
+          :host(:not(:focus-within)) .ML__container {
+            pointer-events: auto !important;
+          }
+
+          /* Visible scrollbar styling */
+          .ML__container::-webkit-scrollbar,
+          [part="container"]::-webkit-scrollbar {
+            height: 12px;
+          }
+          .ML__container::-webkit-scrollbar-thumb,
+          [part="container"]::-webkit-scrollbar-thumb {
+            background: rgba(120, 120, 120, 0.75);
+            border-radius: 8px;
+          }
+          .ML__container::-webkit-scrollbar-track,
+          [part="container"]::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.08);
+          }
+        `;
+        shadow.appendChild(styleTag);
+      }
+
       const container = shadow.querySelector('.ML__container, [part="container"]');
       const content = shadow.querySelector('.ML__content, [part="content"]');
 
       if (container) {
-        container.style.overflowX = 'auto';
+        container.style.overflowX = 'scroll';
         container.style.overflowY = 'hidden';
         container.style.webkitOverflowScrolling = 'touch';
         container.style.scrollbarGutter = 'stable';
+        container.style.scrollbarWidth = 'auto';
       }
 
       if (content) {
-        content.style.overflowX = 'auto';
-        content.style.overflowY = 'hidden';
+        content.style.overflowX = 'visible';
+        content.style.overflowY = 'visible';
         content.style.whiteSpace = 'nowrap';
         content.style.minWidth = '100%';
         content.style.width = 'max-content';
-        content.style.webkitOverflowScrolling = 'touch';
       }
 
       return Boolean(content);
     };
 
     if (!apply()) {
-      requestAnimationFrame(apply);
+      requestAnimationFrame(() => {
+        if (!apply()) {
+          setTimeout(apply, 50);
+        }
+      });
     }
   }
 
