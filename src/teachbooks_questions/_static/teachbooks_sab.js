@@ -236,6 +236,8 @@ function tunedSimilarity(student, correct) {
 }
 
 (function () {
+  const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
+
   function configureMathFieldHorizontalScroll(mathField) {
     if (!mathField) {
       return;
@@ -248,10 +250,10 @@ function tunedSimilarity(student, correct) {
       }
 
       // Add internal styles once: MathLive renders in shadow DOM, so host CSS is not enough.
-      let styleTag = shadow.querySelector('style[data-tb-visible-scrollbar]');
+      let styleTag = shadow.querySelector(`style[${MATH_SCROLL_STYLE_ID}]`);
       if (!styleTag) {
         styleTag = document.createElement('style');
-        styleTag.setAttribute('data-tb-visible-scrollbar', '1');
+        styleTag.setAttribute(MATH_SCROLL_STYLE_ID, '1');
         styleTag.textContent = `
           .ML__container,
           [part="container"] {
@@ -318,33 +320,7 @@ function tunedSimilarity(student, correct) {
         shadow.appendChild(styleTag);
       }
 
-      const container = shadow.querySelector('.ML__container, [part="container"]');
       const content = shadow.querySelector('.ML__content, [part="content"]');
-      const toggles = shadow.querySelector('.ML__toggles');
-
-      if (container) {
-        container.style.overflowX = 'hidden';
-        container.style.overflowY = 'hidden';
-      }
-
-      if (content) {
-        content.style.overflowX = 'auto';
-        content.style.overflowY = 'hidden';
-        content.style.whiteSpace = 'nowrap';
-        content.style.minWidth = '0';
-        content.style.width = 'auto';
-        content.style.flex = '1 1 auto';
-        content.style.webkitOverflowScrolling = 'touch';
-        content.style.scrollbarGutter = 'stable';
-        content.style.scrollbarWidth = 'auto';
-      }
-
-      if (toggles) {
-        toggles.style.display = 'inline-flex';
-        toggles.style.flexDirection = 'row';
-        toggles.style.alignItems = 'center';
-        toggles.style.gap = '0.25rem';
-      }
 
       return Boolean(content);
     };
@@ -493,6 +469,33 @@ function tunedSimilarity(student, correct) {
     }
   }
 
+  function clearShowAnswerMode(questionDiv, clearValues) {
+    if (!questionDiv) {
+      return;
+    }
+
+    questionDiv.querySelectorAll('div.sd-card.option').forEach(function (optionCard) {
+      const textArea = optionCard.querySelector('textarea.question-option-input');
+      const mathField = optionCard.querySelector('math-field.question-option-input');
+
+      if (textArea && textArea.classList.contains('show-answer')) {
+        if (clearValues) {
+          textArea.value = '';
+        }
+        textArea.classList.remove('show-answer');
+      }
+
+      if (mathField && mathField.classList.contains('show-answer')) {
+        if (clearValues) {
+          mathField.value = '';
+        }
+        mathField.classList.remove('show-answer');
+      }
+
+      setReadOnlyState(textArea, mathField, false);
+    });
+  }
+
   function handleResetClick(resetButton) {
     const questionDiv = getQuestionDiv(resetButton);
     if (!questionDiv) {
@@ -501,23 +504,9 @@ function tunedSimilarity(student, correct) {
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
     if (questionOptionsSection) {
-      questionOptionsSection.querySelectorAll('div.sd-card.option').forEach(function (optionCard) {
-        const footer = optionCard.querySelector('div.sd-card-footer');
-        const textArea = optionCard.querySelector('textarea.question-option-input');
-        const mathField = optionCard.querySelector('math-field.question-option-input');
-
-        if (footer) {
-          footer.classList.remove('correct', 'incorrect');
-        }
-        if (textArea) {
-          textArea.value = '';
-          textArea.classList.remove('show-answer');
-        }
-        if (mathField) {
-          mathField.value = '';
-          mathField.classList.remove('show-answer');
-        }
-        setReadOnlyState(textArea, mathField, false);
+      clearShowAnswerMode(questionDiv, true);
+      questionOptionsSection.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
+        footer.classList.remove('correct', 'incorrect');
       });
     }
   }
@@ -529,17 +518,7 @@ function tunedSimilarity(student, correct) {
     }
 
     // Clear show-answer mode in this question before checking submitted answers
-    questionDiv.querySelectorAll('textarea.question-option-input.show-answer').forEach(function (ta) {
-      ta.value = '';
-      ta.classList.remove('show-answer');
-      ta.readOnly = false;
-    });
-    questionDiv.querySelectorAll('math-field.question-option-input.show-answer').forEach(function (mf) {
-      mf.value = '';
-      mf.classList.remove('show-answer');
-      mf.readOnly = false;
-      mf.removeAttribute('read-only');
-    });
+    clearShowAnswerMode(questionDiv, true);
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
     if (!questionOptionsSection) {
@@ -652,15 +631,8 @@ function tunedSimilarity(student, correct) {
     if (!questionDiv) {
       return;
     }
-    // Remove all answers
-    questionDiv.querySelectorAll('textarea.question-option-input.show-answer').forEach(function (ta) {
-      ta.value = '';
-      ta.classList.remove('show-answer');
-    });
-    questionDiv.querySelectorAll('math-field.question-option-input.show-answer').forEach(function (mf) {
-      mf.value = '';
-      mf.classList.remove('show-answer');
-    });
+    // Remove all shown answers when resuming input mode
+    clearShowAnswerMode(questionDiv, true);
     // Remove all feedback
     questionDiv.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
       footer.classList.remove('correct', 'incorrect');

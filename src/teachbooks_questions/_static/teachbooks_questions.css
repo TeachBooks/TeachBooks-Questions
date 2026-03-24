@@ -233,23 +233,6 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
     font: inherit;
     background-color: var(--question-white);
 }
-div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(content) {
-    overflow-x: auto;         /* show horizontal scrollbar only when needed */
-    overflow-y: hidden;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-gutter: stable;
-}
-div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(content)::-webkit-scrollbar {
-    height: 12px;
-}
-div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(content)::-webkit-scrollbar-thumb {
-    background: rgba(120, 120, 120, 0.75);
-    border-radius: 8px;
-}
-div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(content)::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.08);
-}
 /* math-field icon colors (shadow DOM) */
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(virtual-keyboard-toggle),
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(menu-toggle) {
