@@ -278,18 +278,30 @@ function tunedSimilarity(student, correct) {
           .ML__toggles,
           .ML__virtual-keyboard-toggle,
           .ML__menu-toggle {
-            flex: 0 0 auto;
+            flex: 0 0 auto !important;
           }
 
           .ML__toggles {
-            display: inline-flex !important;
+            display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
             justify-content: flex-start !important;
-            width: auto !important;
-            max-width: max-content;
-            gap: 0.15rem;
+            width: fit-content !important;
+            max-width: fit-content !important;
+            min-width: 0 !important;
+            gap: 0.1rem !important;
+            column-gap: 0.1rem !important;
+            row-gap: 0 !important;
             white-space: nowrap;
+            grid-template-columns: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          .ML__toggles > * {
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            min-width: 0 !important;
           }
 
           .ML__virtual-keyboard-toggle,
@@ -298,8 +310,13 @@ function tunedSimilarity(student, correct) {
             align-items: center;
             justify-content: center;
             margin: 0 !important;
-            padding-left: 0.15rem;
-            padding-right: 0.15rem;
+            margin-inline: 0 !important;
+            margin-inline-start: 0 !important;
+            margin-inline-end: 0 !important;
+            padding-left: 0.1rem;
+            padding-right: 0.1rem;
+            min-width: 0 !important;
+            width: auto !important;
           }
 
           /* Keep scrolling possible on touch even when unfocused */
