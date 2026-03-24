@@ -285,7 +285,10 @@ function tunedSimilarity(student, correct) {
             display: inline-flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            gap: 0.25rem;
+            justify-content: flex-start !important;
+            width: auto !important;
+            max-width: max-content;
+            gap: 0.15rem;
             white-space: nowrap;
           }
 
@@ -294,6 +297,9 @@ function tunedSimilarity(student, correct) {
             display: inline-flex !important;
             align-items: center;
             justify-content: center;
+            margin: 0 !important;
+            padding-left: 0.15rem;
+            padding-right: 0.15rem;
           }
 
           /* Keep scrolling possible on touch even when unfocused */
