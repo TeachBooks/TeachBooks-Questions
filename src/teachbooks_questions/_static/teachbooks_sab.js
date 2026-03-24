@@ -255,19 +255,28 @@ function tunedSimilarity(student, correct) {
         styleTag.textContent = `
           .ML__container,
           [part="container"] {
+            display: flex !important;
+            align-items: center;
             overflow-x: hidden !important;
             overflow-y: hidden !important;
           }
 
           .ML__content,
           [part="content"] {
+            flex: 1 1 auto;
             overflow-x: auto !important;
             overflow-y: hidden !important;
             white-space: nowrap !important;
-            width: max-content !important;
-            min-width: 100% !important;
+            width: auto !important;
+            min-width: 0 !important;
             -webkit-overflow-scrolling: touch;
             scrollbar-gutter: stable;
+          }
+
+          .ML__toggles,
+          .ML__virtual-keyboard-toggle,
+          .ML__menu-toggle {
+            flex: 0 0 auto;
           }
 
           /* Keep scrolling possible on touch even when unfocused */
@@ -306,8 +315,9 @@ function tunedSimilarity(student, correct) {
         content.style.overflowX = 'auto';
         content.style.overflowY = 'hidden';
         content.style.whiteSpace = 'nowrap';
-        content.style.minWidth = '100%';
-        content.style.width = 'max-content';
+        content.style.minWidth = '0';
+        content.style.width = 'auto';
+        content.style.flex = '1 1 auto';
         content.style.webkitOverflowScrolling = 'touch';
         content.style.scrollbarGutter = 'stable';
         content.style.scrollbarWidth = 'auto';
