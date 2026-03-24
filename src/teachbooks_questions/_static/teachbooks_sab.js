@@ -461,19 +461,19 @@ function tunedSimilarity(student, correct) {
             mathField.value = answerSection.textContent.trim();
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
-            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(">=", "\\geq").replace("<=", "\\leq");
+            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(">=", "\\geq").replace("\\geq", "\\leq");
           } else if (mathField.classList.contains('type-MAP')) {
             // for MAP type, we want to show some extra text to indicate the correct answer is a range
             parts = answerSection.textContent.trim().split(';');
             centre = parts[0].trim();
             radius = parts[1].trim();
-            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - ' + centre + '| \\leq ' + radius;
+            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius;
           } else if (mathField.classList.contains('type-MRP')) {
             // for MRP type, we want to show some extra text to indicate the correct answer is a range
             parts = answerSection.textContent.trim().split(';');
             centre = parts[0].trim();
             radius = parts[1].trim();
-            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - ' + centre + '| \\leq ' + radius + '\\cdot |' + centre + '|';
+            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius + '\\cdot |\left(' + centre + '\right)|';
           }
         }
       }
