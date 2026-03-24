@@ -298,6 +298,16 @@ function tunedSimilarity(student, correct) {
             padding: 0 !important;
           }
 
+          .ML__toggles--vertical {
+            display: flex !important;
+            flex-direction: row !important;
+            grid-template-columns: none !important;
+            row-gap: 0 !important;
+            column-gap: 0.1rem !important;
+            width: fit-content !important;
+            max-width: fit-content !important;
+          }
+
           .ML__toggles > * {
             flex: 0 0 auto !important;
             margin: 0 !important;
