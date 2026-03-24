@@ -255,18 +255,19 @@ function tunedSimilarity(student, correct) {
         styleTag.textContent = `
           .ML__container,
           [part="container"] {
-            overflow-x: scroll !important;
+            overflow-x: hidden !important;
             overflow-y: hidden !important;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-gutter: stable;
           }
 
           .ML__content,
           [part="content"] {
-            overflow: visible !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
             white-space: nowrap !important;
             width: max-content !important;
             min-width: 100% !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
           }
 
           /* Keep scrolling possible on touch even when unfocused */
@@ -275,18 +276,18 @@ function tunedSimilarity(student, correct) {
             pointer-events: auto !important;
           }
 
-          /* Visible scrollbar styling */
-          .ML__container::-webkit-scrollbar,
-          [part="container"]::-webkit-scrollbar {
+          /* Scrollbar styling for the input area */
+          .ML__content::-webkit-scrollbar,
+          [part="content"]::-webkit-scrollbar {
             height: 12px;
           }
-          .ML__container::-webkit-scrollbar-thumb,
-          [part="container"]::-webkit-scrollbar-thumb {
+          .ML__content::-webkit-scrollbar-thumb,
+          [part="content"]::-webkit-scrollbar-thumb {
             background: rgba(120, 120, 120, 0.75);
             border-radius: 8px;
           }
-          .ML__container::-webkit-scrollbar-track,
-          [part="container"]::-webkit-scrollbar-track {
+          .ML__content::-webkit-scrollbar-track,
+          [part="content"]::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.08);
           }
         `;
@@ -297,19 +298,19 @@ function tunedSimilarity(student, correct) {
       const content = shadow.querySelector('.ML__content, [part="content"]');
 
       if (container) {
-        container.style.overflowX = 'scroll';
+        container.style.overflowX = 'hidden';
         container.style.overflowY = 'hidden';
-        container.style.webkitOverflowScrolling = 'touch';
-        container.style.scrollbarGutter = 'stable';
-        container.style.scrollbarWidth = 'auto';
       }
 
       if (content) {
-        content.style.overflowX = 'visible';
-        content.style.overflowY = 'visible';
+        content.style.overflowX = 'auto';
+        content.style.overflowY = 'hidden';
         content.style.whiteSpace = 'nowrap';
         content.style.minWidth = '100%';
         content.style.width = 'max-content';
+        content.style.webkitOverflowScrolling = 'touch';
+        content.style.scrollbarGutter = 'stable';
+        content.style.scrollbarWidth = 'auto';
       }
 
       return Boolean(content);

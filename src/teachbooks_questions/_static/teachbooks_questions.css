@@ -190,7 +190,7 @@ div.short-answer.blocks section.question-options div.sd-card-body.input textarea
     min-height: 6rem;         /* initial size; adjust to taste */
     resize: vertical;         /* allow vertical resize only */
     overflow-y: auto;         /* vertical scrollbar if needed */
-    overflow-x: auto;         /* horizontal scrollbar if needed */
+    overflow-x: hidden;       /* text answers stay multiline */
     border: none;             /* optional: match card’s border instead */
     padding: .6rem .8rem;     /* optional */
     font: inherit;
@@ -216,11 +216,10 @@ div.short-answer.blocks section.question-options div.sd-card-footer.incorrect se
 }
 div.short-answer.blocks section.question-options div.sd-card-body.input section.question-option-answer {
     display: none;
-    overflow-x: auto;         /* enable horizontal scrolling when shown */
 }
 /* math stuff */
-div.short-answer.blocks section.question-options div.sd-card-body.input {
-    overflow-x: scroll;       /* always show horizontal scrollbar */
+div.short-answer.blocks section.question-options div.sd-card-body.input:has(math-field.question-option-input) {
+    overflow-x: hidden;       /* keep outer card fixed; only math input scrolls */
     min-height: 6rem;         /* match math-field minimum */
 }
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input {
@@ -235,7 +234,7 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
     background-color: var(--question-white);
 }
 div.short-answer.blocks section.question-options div.sd-card-body.input math-field.question-option-input::part(content) {
-    overflow-x: scroll;       /* always show horizontal scrollbar */
+    overflow-x: auto;         /* show horizontal scrollbar only when needed */
     overflow-y: hidden;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
