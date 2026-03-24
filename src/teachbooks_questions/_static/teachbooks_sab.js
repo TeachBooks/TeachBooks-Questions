@@ -295,6 +295,7 @@ function tunedSimilarity(student, correct) {
             white-space: nowrap;
             grid-template-columns: none !important;
             margin: 0 !important;
+            margin-left: 0.5rem !important;
             padding: 0 !important;
           }
 
@@ -303,7 +304,7 @@ function tunedSimilarity(student, correct) {
             flex-direction: row !important;
             grid-template-columns: none !important;
             row-gap: 0 !important;
-            column-gap: 0.1rem !important;
+            column-gap: 0.5rem !important;
             width: fit-content !important;
             max-width: fit-content !important;
           }
