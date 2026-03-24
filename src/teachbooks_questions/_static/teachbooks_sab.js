@@ -475,7 +475,7 @@ function tunedSimilarity(student, correct) {
     }
   }
 
-  function clearShowAnswerMode(questionDiv, clearValues) {
+  function clearShowAnswerMode(questionDiv, clearValues, clearAllInputs) {
     if (!questionDiv) {
       return;
     }
@@ -485,17 +485,21 @@ function tunedSimilarity(student, correct) {
       const mathField = optionCard.querySelector('math-field.question-option-input');
 
       if (textArea && textArea.classList.contains('show-answer')) {
-        if (clearValues) {
+        if (clearValues || clearAllInputs) {
           textArea.value = '';
         }
         textArea.classList.remove('show-answer');
+      } else if (textArea && clearAllInputs) {
+        textArea.value = '';
       }
 
       if (mathField && mathField.classList.contains('show-answer')) {
-        if (clearValues) {
+        if (clearValues || clearAllInputs) {
           mathField.value = '';
         }
         mathField.classList.remove('show-answer');
+      } else if (mathField && clearAllInputs) {
+        mathField.value = '';
       }
 
       setReadOnlyState(textArea, mathField, false);
@@ -510,7 +514,7 @@ function tunedSimilarity(student, correct) {
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
     if (questionOptionsSection) {
-      clearShowAnswerMode(questionDiv, true);
+      clearShowAnswerMode(questionDiv, true, true);
       questionOptionsSection.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
         footer.classList.remove('correct', 'incorrect');
       });
@@ -524,7 +528,7 @@ function tunedSimilarity(student, correct) {
     }
 
     // Clear show-answer mode in this question before checking submitted answers
-    clearShowAnswerMode(questionDiv, true);
+    clearShowAnswerMode(questionDiv, true, false);
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
     if (!questionOptionsSection) {
@@ -638,7 +642,7 @@ function tunedSimilarity(student, correct) {
       return;
     }
     // Remove all shown answers when resuming input mode
-    clearShowAnswerMode(questionDiv, true);
+    clearShowAnswerMode(questionDiv, true, false);
     // Remove all feedback
     questionDiv.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
       footer.classList.remove('correct', 'incorrect');
