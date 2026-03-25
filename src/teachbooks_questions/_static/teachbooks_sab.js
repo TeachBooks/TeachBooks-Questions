@@ -236,6 +236,144 @@ function tunedSimilarity(student, correct) {
 }
 
 (function () {
+  const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
+
+  function configureMathFieldHorizontalScroll(mathField) {
+    if (!mathField) {
+      return;
+    }
+
+    const apply = () => {
+      const shadow = mathField.shadowRoot;
+      if (!shadow) {
+        return false;
+      }
+
+      // Add internal styles once: MathLive renders in shadow DOM, so host CSS is not enough.
+      let styleTag = shadow.querySelector(`style[${MATH_SCROLL_STYLE_ID}]`);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.setAttribute(MATH_SCROLL_STYLE_ID, '1');
+        styleTag.textContent = `
+          .ML__container,
+          [part="container"] {
+            display: flex !important;
+            align-items: center;
+            overflow-x: hidden !important;
+            overflow-y: hidden !important;
+          }
+
+          .ML__content,
+          [part="content"] {
+            flex: 1 1 auto;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            white-space: nowrap !important;
+            width: auto !important;
+            min-width: 0 !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
+          }
+
+          .ML__toggles,
+          .ML__virtual-keyboard-toggle,
+          .ML__menu-toggle {
+            flex: 0 0 auto !important;
+          }
+
+          .ML__toggles {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: fit-content !important;
+            max-width: fit-content !important;
+            min-width: 0 !important;
+            gap: 0.1rem !important;
+            column-gap: 0.1rem !important;
+            row-gap: 0 !important;
+            white-space: nowrap;
+            grid-template-columns: none !important;
+            margin: 0 !important;
+            margin-left: 0.5rem !important;
+            padding: 0 !important;
+          }
+
+          .ML__toggles--vertical {
+            display: flex !important;
+            flex-direction: row !important;
+            grid-template-columns: none !important;
+            row-gap: 0 !important;
+            column-gap: 0.5rem !important;
+            width: fit-content !important;
+            max-width: fit-content !important;
+          }
+
+          .ML__toggles > * {
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            min-width: 0 !important;
+          }
+
+          .ML__virtual-keyboard-toggle,
+          .ML__menu-toggle {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            margin: 0 !important;
+            margin-inline: 0 !important;
+            margin-inline-start: 0 !important;
+            margin-inline-end: 0 !important;
+            padding-left: 0.1rem;
+            padding-right: 0.1rem;
+            min-width: 0 !important;
+            width: auto !important;
+          }
+
+          /* Keep scrolling possible on touch even when unfocused */
+          :host(:not(:focus)) .ML__container,
+          :host(:not(:focus-within)) .ML__container {
+            pointer-events: auto !important;
+          }
+
+          /* Scrollbar styling for the input area */
+          .ML__content::-webkit-scrollbar,
+          [part="content"]::-webkit-scrollbar {
+            height: 12px;
+          }
+          .ML__content::-webkit-scrollbar-thumb,
+          [part="content"]::-webkit-scrollbar-thumb {
+            background: rgba(120, 120, 120, 0.75);
+            border-radius: 8px;
+          }
+          .ML__content::-webkit-scrollbar-track,
+          [part="content"]::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.08);
+          }
+        `;
+        shadow.appendChild(styleTag);
+      }
+
+      const content = shadow.querySelector('.ML__content, [part="content"]');
+
+      return Boolean(content);
+    };
+
+    if (!apply()) {
+      requestAnimationFrame(() => {
+        if (!apply()) {
+          setTimeout(apply, 50);
+        }
+      });
+    }
+  }
+
+  function configureAllMathFields() {
+    document
+      .querySelectorAll('math-field.question-option-input')
+      .forEach((mathField) => configureMathFieldHorizontalScroll(mathField));
+  }
+
   function getQuestionDiv(element) {
     return element.closest('div.short-answer.blocks');
   }
@@ -351,6 +489,51 @@ function tunedSimilarity(student, correct) {
     }
   }
 
+  function setReadOnlyState(textArea, mathField, readOnly) {
+    if (textArea) {
+      textArea.readOnly = readOnly;
+    }
+    if (mathField) {
+      mathField.readOnly = readOnly;
+      if (readOnly) {
+        mathField.setAttribute('read-only', '');
+      } else {
+        mathField.removeAttribute('read-only');
+      }
+    }
+  }
+
+  function clearShowAnswerMode(questionDiv, clearValues, clearAllInputs) {
+    if (!questionDiv) {
+      return;
+    }
+
+    questionDiv.querySelectorAll('div.sd-card.option').forEach(function (optionCard) {
+      const textArea = optionCard.querySelector('textarea.question-option-input');
+      const mathField = optionCard.querySelector('math-field.question-option-input');
+
+      if (textArea && textArea.classList.contains('show-answer')) {
+        if (clearValues || clearAllInputs) {
+          textArea.value = '';
+        }
+        textArea.classList.remove('show-answer');
+      } else if (textArea && clearAllInputs) {
+        textArea.value = '';
+      }
+
+      if (mathField && mathField.classList.contains('show-answer')) {
+        if (clearValues || clearAllInputs) {
+          mathField.value = '';
+        }
+        mathField.classList.remove('show-answer');
+      } else if (mathField && clearAllInputs) {
+        mathField.value = '';
+      }
+
+      setReadOnlyState(textArea, mathField, false);
+    });
+  }
+
   function handleResetClick(resetButton) {
     const questionDiv = getQuestionDiv(resetButton);
     if (!questionDiv) {
@@ -359,22 +542,9 @@ function tunedSimilarity(student, correct) {
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
     if (questionOptionsSection) {
-      questionOptionsSection.querySelectorAll('div.sd-card.option').forEach(function (optionCard) {
-        const footer = optionCard.querySelector('div.sd-card-footer');
-        const textArea = optionCard.querySelector('textarea.question-option-input');
-        const mathField = optionCard.querySelector('math-field.question-option-input');
-
-        if (footer) {
-          footer.classList.remove('correct', 'incorrect');
-        }
-        if (textArea) {
-          textArea.value = '';
-          textArea.classList.remove('show-answer');
-        }
-        if (mathField) {
-          mathField.value = '';
-          mathField.classList.remove('show-answer');
-        }
+      clearShowAnswerMode(questionDiv, true, true);
+      questionOptionsSection.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
+        footer.classList.remove('correct', 'incorrect');
       });
     }
   }
@@ -385,15 +555,8 @@ function tunedSimilarity(student, correct) {
       return;
     }
 
-    // Clear any textareas with show-answer class
-    document.querySelectorAll('textarea.question-option-input.show-answer').forEach(function (ta) {
-      ta.value = '';
-      ta.classList.remove('show-answer');
-    });
-    document.querySelectorAll('math-field.question-option-input.show-answer').forEach(function (ta) {
-      ta.value = '';
-      ta.classList.remove('show-answer');
-    });
+    // Clear show-answer mode in this question before checking submitted answers
+    clearShowAnswerMode(questionDiv, true, false);
 
     const questionOptionsSection = getQuestionOptionsSection(questionDiv);
     if (!questionOptionsSection) {
@@ -451,6 +614,7 @@ function tunedSimilarity(student, correct) {
       if (mathField) {
         mathField.classList.add('show-answer');
       }
+      setReadOnlyState(textArea, mathField, true);
 
       if (answerSection) {
         if (textArea) {
@@ -475,26 +639,38 @@ function tunedSimilarity(student, correct) {
             radius = parts[1].trim();
             mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius + '\\cdot |\left(' + centre + '\right)|';
           }
+
+          configureMathFieldHorizontalScroll(mathField);
+          requestAnimationFrame(() => {
+            if (typeof mathField.executeCommand === 'function') {
+              mathField.executeCommand('scrollToStart');
+            }
+          });
         }
       }
     });
   }
 
   function handleFocus(element) {
+    // In show-answer mode, focusing should not reset content;
+    // users should leave this mode via Try again (or Submit).
+    if (element.classList && element.classList.contains('show-answer')) {
+      return;
+    }
+    if (element.tagName === 'TEXTAREA' && element.readOnly) {
+      return;
+    }
+    if (element.tagName === 'MATH-FIELD' && (element.readOnly || element.hasAttribute('read-only'))) {
+      return;
+    }
+
     // get the parent question div
     const questionDiv = getQuestionDiv(element);
     if (!questionDiv) {
       return;
     }
-    // Remove all answers
-    questionDiv.querySelectorAll('textarea.question-option-input.show-answer').forEach(function (ta) {
-      ta.value = '';
-      ta.classList.remove('show-answer');
-    });
-    questionDiv.querySelectorAll('math-field.question-option-input.show-answer').forEach(function (mf) {
-      mf.value = '';
-      mf.classList.remove('show-answer');
-    });
+    // Remove all shown answers when resuming input mode
+    clearShowAnswerMode(questionDiv, true, false);
     // Remove all feedback
     questionDiv.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
       footer.classList.remove('correct', 'incorrect');
@@ -528,4 +704,10 @@ function tunedSimilarity(student, correct) {
       handleFocus(event.target);
     }
   }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', configureAllMathFields, { once: true });
+  } else {
+    configureAllMathFields();
+  }
 })();
