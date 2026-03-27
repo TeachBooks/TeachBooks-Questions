@@ -625,7 +625,7 @@ function tunedSimilarity(student, correct) {
             mathField.value = answerSection.textContent.trim();
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
-            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(">=", "\\geq").replace("\\geq", "\\leq");
+            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(/>=/g, "\\geq").replace(/<=/g, "\\leq");
           } else if (mathField.classList.contains('type-MAP')) {
             // for MAP type, we want to show some extra text to indicate the correct answer is a range
             parts = answerSection.textContent.trim().split(';');
