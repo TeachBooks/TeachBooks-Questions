@@ -5,6 +5,11 @@ A Sphinx extension to create and include multiple-choice and short-answer questi
 
 This extensions defines a `question` directive that typesets either a multiple-choice question or a short-answer question, including (automatic) feedback, buttons and styling options.
 
+Available are:
+- Multiple-choice questions, with the option to select one or multiple correct answers.
+- Short-answer questions with text or math input fields, with various options for how the provided answer is checked for correctness.
+- Questions without input fields or submit buttons, which can be used to provide information or ask reflective questions without the need for user input.
+
 ## Installation
 To install the Sphinx-Metadata-Figure extension, follow these steps:
 
@@ -73,13 +78,21 @@ Each of the options and placeholders will be shortly explained next:
 
 - `<title>`: Including a title is optional.
 - `:label: <label>`: Adding a label is optional. Can be used for unnumbered internal references.
-- `:type: <type>`: Defines the type of the question. Available are `multiple-choice` and `short-answer`. If not given, _defaults_ to `multiple-choice`.
-- `:variant: <variant>`: Defines the variant within the type of the question. If not given, the default value for the type is selected. For the type `multiple-choice` the variants `single-select` (_default_) and `multiple-select` are available. For the type `short-answer` the variant `block` (_default_) is available.
+- `:type: <type>`: Defines the type of the question. Available are
+  - `multiple-choice` (_default_)
+  - `short-answer`
+  - `no-input`
+- `:variant: <variant>`: Defines the variant within the type of the question. If not given, the default value for the type is selected.`
+  - For the type `multiple-choice` available variants are
+    - `single-select` (_default_)
+    - `multiple-select`
+  - For the type `short-answer` the variant `block` (_default_) is available.
+  - For the type `no-input` the variant `no-submit` (_default_) is available.
 - `:columns: <columns>`: Number of columns to use for displaying the options for `multiple-choice` questions (_default_: `1 1 2 2`) or for the input blocks for the `short-answer block` questions (_default_: `1 1 1 1`). See [Grids](https://sphinx-design.readthedocs.io/en/latest/grids.html), second paragraph for more details. Either one single number or 4 numbers can be provided. If one single number is provided, it will be used for all screen sizes. If 4 numbers are provided, they will be used for the 4 screen sizes (small, medium, large and extra large) in that order.
 - `:class: <class>`: The classes to be added to the class list of the `div` element for styling purposes.
 - `:admonition:` If included, `admonition` will be added to the classes of the containing `<div>`. Can also be done through the `:class:` option.
 - `:nocaption:` If included, no caption will be added to the question. By default, a caption is added with the text "Question". This option can be used to hide the caption. If also no title is provided, the question will have neither a title nor a caption shown. If a title is provided, the title will be shown without surrounding brackets.
-- `:showanswer:`: If included, a button will be added to show the correct answer(s) and related feedback.
+- `:showanswer:`: If included, a button will be added to show the correct answer(s) and related feedback. In case of `no-input no-submit` questions, this button will always be shown to display the provided feedback.
 - `<pre-question>`: Optional content to be included before the options/input fields. Will be parsed, so nesting of elements is possible.
 - `<question>`: Code that defines the content of the options/input fields, including (in)correct answers and feedback. See [Syntax for multiple-choice questions](#syntax-for-multiple-choice-questions) and [Syntax for short-answer blocks questions](#syntax-for-short-answer-blocks-questions). Everything between the first `---` and the second `---` is considered part of this part of the code.
 - `<post-question>`: Optional content to be included after the options/input fields. Will be parsed, so nesting of elements is possible.
@@ -164,6 +177,22 @@ A line starting with `= ` is considered the start of the feedback if a correct a
 A line starting with `> ` is considered the start of the feedback if an incorrect answer is entered. `<IncorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same feedback. If not provided, the default `Incorrect.` will be substituted.
 
 If between two lines starting with `<Mode>[Answer] ` multiple instances of correct feedback (`= `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of incorrect feedback (`> `) are found, these will be concatenated.
+
+### Syntax for no-input no-submit questions
+
+The code inside `<question>` for `no-input` questions for the variant `no-submit` has the following syntax:
+
+````text
+> <Feedback>
+
+= <Feedback>
+
+! <Feedback>
+````
+
+A line starting with `> `, `= ` or `! ` is considered the start of a feedback option. `<Feedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> `, `= ` or `! ` and is directly followed by some code. All following lines not starting with `> `, `= ` or `! ` are considered part of the same feedback. At least one feedback option should be provided, as this will be the only content shown in the question, and it should be clear to the user that this is not a mistake but that there is indeed no input field or submit button.
+
+If multiple feedback options are provided, these will be shown as cards in a grid. The coloring of the cards will be based on whether the feedback option starts with `> `, `= ` or `! `, where `> ` indicates that the card should have the styling for incorrect answers, `= ` indicates that the card should have the styling for correct answers, and `! ` indicates that the card should have the styling for neutral or informative feedback. This allows for different types of feedback to be provided, which can be useful to provide more nuanced information to the user.
 
 ## Documentation
 

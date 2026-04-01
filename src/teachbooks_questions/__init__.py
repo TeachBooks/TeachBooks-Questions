@@ -12,10 +12,11 @@ logger = logging.getLogger(__name__)
 
 class QuestionDirective(SphinxDirective):
     # Configuration
-    TYPES = ["multiple-choice", "short-answer"]
+    TYPES = ["multiple-choice", "short-answer","no-input"]
     VARIANTS = {
         "multiple-choice": ["single-select", "multiple-select"],
         "short-answer": ["blocks"],
+        "no-input": ["no-submit"]
     }
     FEEDBACKS = {
         "multiple-choice": {
@@ -23,10 +24,13 @@ class QuestionDirective(SphinxDirective):
             "multiple-select": {True: "Correct!", False: "Incorrect."},
         },
         "short-answer": {"blocks": {True: "Correct!", False: "Incorrect."}},
+        "no-input": {"no-submit": {}}
+
     }
     COLUMNS = {
         "multiple-choice": {"single-select": "1 1 2 2", "multiple-select": "1 1 2 2"},
         "short-answer": {"blocks": "1 1 1 1"},
+        "no-input": {"no-submit": "1 1 1 1"}
     }
     
     # Patterns
@@ -34,6 +38,7 @@ class QuestionDirective(SphinxDirective):
     OPTION_CHECKBOX_CHECKED = "[x] "
     FEEDBACK_WRONG_PREFIX = "> "
     FEEDBACK_CORRECT_PREFIX = "= "
+    FEEDBACK_NEUTRAL_PREFIX = "! "
     SEPARATOR = "---"
     
     has_content = True
@@ -77,6 +82,8 @@ class QuestionDirective(SphinxDirective):
         is_admonition = "admonition" in self.options
         no_caption = "nocaption" in self.options
         show_answer = "showanswer" in self.options
+        if question_type == "no-input" and variant == "no-submit":
+            show_answer = True  # Force show_answer for no-input no-submit questions
 
         # Create and configure node
         node = question_node()
@@ -107,8 +114,10 @@ class QuestionDirective(SphinxDirective):
                 return self._handle_multiple_choice_single_select(node, node_id, columns, feedback)
             else:  # multiple-select
                 return self._handle_multiple_choice_multiple_select(node, node_id, columns, feedback)
-        else:  # short-answer
-            return self._handle_short_answer_blocks(node, node_id, feedback,columns)
+        elif question_type == "short-answer" and variant == "blocks":
+            return self._handle_short_answer_blocks(node, node_id, feedback, columns)
+        else:  # no-input no-submit
+            return self._handle_no_input_no_submit(node, node_id, feedback, columns)
 
     def _create_node_id(self) -> str:
         """Create a unique ID for the node."""
@@ -220,6 +229,128 @@ class QuestionDirective(SphinxDirective):
         post_text = self.content[separators[1] + 1:]
         
         return pre_text, options_raw, post_text
+    
+    def _handle_no_input_no_submit(self, node: Node, node_id: str, feedback: Dict, columns: str) -> List[Node]:
+        """Handle no-input no-submit questions."""
+        pre_text, options_raw, post_text = self._split_input()
+
+        # Add pre-text if present
+        self._add_text_section(node, node_id, pre_text, "pretext")
+
+        # Parse feedback options
+        options_data = self._parse_no_input_options(options_raw, feedback, node_id)
+        logger.info(f"Parsed {len(options_data)} feedback options for no-input question at line {self.lineno} in {self.env.docname}:",color='fuchsia')
+        for idx, option in enumerate(options_data):
+            logger.info(f"  Option {idx + 1}: type={option['type']}, "
+                        f"feedback={option['feedback']}, ",color='fuchsia')
+        
+        # Render feedback options as cards
+        self._render_no_input_cards(node, node_id, options_data, columns)
+
+        # Add post-text if present
+        self._add_text_section(node, node_id, post_text, "posttext")
+
+        # Add buttons
+        button_count = 2 # Show answer and reset, no submit button
+        buttons = []
+        buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
+        buttons.append(("reset-button", "<i class='fa-solid fa-repeat'></i> Try again"))
+
+        self._add_button_section(node, node_id, buttons, node["show_answer"], button_count)
+
+        return [node]
+
+    def _render_no_input_cards(self, node: Node, node_id: str, options: List[Dict], columns: str) -> None:
+        """Render no-input feedback options as cards."""
+        if not options:
+            return
+        
+        # Create card grid markup
+        cards_markup = [
+            f"::::{{grid}} {columns}",
+            ":gutter: 3",
+            "",
+        ]
+        for _ in options:
+            cards_markup.extend([
+                ":::{grid-item-card}",
+                ":shadow: lg",
+                ":class-card: option",
+                "",
+                ":::",
+            ])
+        cards_markup.append("::::")
+
+        # Render cards
+        options_section = nodes.section(
+            classes=["question-options"],
+            ids=[f"{node_id}-options"]
+        )
+        self.state.nested_parse(cards_markup, self.content_offset, options_section)
+        node += options_section
+
+        # Populate card content
+        current_card = -1
+        for container in options_section.findall(nodes.container):
+            card_classes = container.get("classes", [])
+            
+            if "sd-card-body" in card_classes:
+                current_card += 1
+                option = options[current_card]
+                type_class = option["type"]
+                option_section = nodes.section(
+                    classes=[f"question-option {type_class}"],
+                    ids=[f"{node_id}-option-{current_card}"]
+                )
+                self.state.nested_parse(
+                    option["feedback"], self.content_offset, option_section
+                )
+                container += option_section
+
+    def _parse_no_input_options(self, options_raw: List[str], feedback: Dict, node_id: str
+    ) -> List[Dict[str, Any]]:
+        """Parse feedback options for no-input questions."""
+        if not options_raw:
+            return []
+
+        # Find option markers (lines starting with > or = or ! for feedback)
+        option_starts = [
+            i for i, line in enumerate(options_raw)
+            if line.strip().startswith(self.FEEDBACK_WRONG_PREFIX) or line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX) or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX)
+        ]
+
+        options = []
+        for idx, start in enumerate(option_starts):
+            end = option_starts[idx + 1] if idx + 1 < len(option_starts) else len(options_raw)
+            block = options_raw[start:end]
+            option = self._parse_single_no_input_option(block, feedback)
+            options.append(option)
+
+        return options
+
+    def _parse_single_no_input_option(self, block: List[str], feedback: Dict) -> Dict[str, Any]:
+        """Parse a single feedback option for no-input questions."""
+        first_line = block[0].strip()
+        
+        # Extract label (text after > or = or ! on first line and subsequent lines)
+        if first_line.startswith(self.FEEDBACK_WRONG_PREFIX):
+            label_start = first_line[len(self.FEEDBACK_WRONG_PREFIX):].strip()
+        elif first_line.startswith(self.FEEDBACK_CORRECT_PREFIX):
+            label_start = first_line[len(self.FEEDBACK_CORRECT_PREFIX):].strip()
+        elif first_line.startswith(self.FEEDBACK_NEUTRAL_PREFIX):
+            label_start = first_line[len(self.FEEDBACK_NEUTRAL_PREFIX):].strip()
+        else:
+            label_start = ""
+
+        label = [label_start] if label_start else []
+        
+        for line in block[1:]:
+            label.append(line.strip())
+
+        return {
+            "type": "correct" if first_line.startswith(self.FEEDBACK_CORRECT_PREFIX) else "incorrect" if first_line.startswith(self.FEEDBACK_WRONG_PREFIX) else "neutral",
+            "feedback": label or [""],  # For no-input, the label is also the feedback
+        }
 
     def _handle_short_answer_blocks(self, node: Node, node_id: str, feedback: Dict, columns: str) -> List[Node]:
         """Handle short-answer block questions."""

@@ -277,10 +277,32 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
 
 div.multiple-choice .sd-card .sd-card-header,
 div.short-answer .sd-card .sd-card-header,
+div.no-input .sd-card .sd-card-header,
 div.multiple-choice div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
 div.short-answer div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
+div.no-input div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
 div.multiple-choice .sd-card .sd-card-footer:not(.correct, .incorrect),
-div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect)
+div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect),
+div.no-input .sd-card .sd-card-footer:not(.correct, .incorrect)
  {
     background-color: transparent !important;
+}
+
+/* No input questions */
+div.no-input section.question-options div.sd-card.option {
+    display: none;
+}
+div.no-input section.question-options div.sd-card.correct,
+div.no-input section.question-options div.sd-card.incorrect {
+    display: block;
+}
+
+div.no-input section.question-options div.sd-card.correct {
+    background-color: var(--question-green);
+}
+div.no-input section.question-options div.sd-card.incorrect {
+    background-color: var(--question-red);
+}
+div.no-input section.question-options div.sd-card.neutral {
+    background-color: var(--question-blue);
 }
