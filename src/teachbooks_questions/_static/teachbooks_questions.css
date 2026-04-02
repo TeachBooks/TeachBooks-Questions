@@ -289,14 +289,6 @@ div.no-input .sd-card .sd-card-footer:not(.correct, .incorrect)
 }
 
 /* No input questions */
-div.no-input section.question-options div.sd-card.option {
-    display: none;
-}
-div.no-input section.question-options div.sd-card.correct,
-div.no-input section.question-options div.sd-card.incorrect {
-    display: block;
-}
-
 div.no-input section.question-options div.sd-card.correct {
     background-color: var(--question-green);
 }
@@ -305,4 +297,13 @@ div.no-input section.question-options div.sd-card.incorrect {
 }
 div.no-input section.question-options div.sd-card.neutral {
     background-color: var(--question-blue);
+}
+
+div.no-input section.question-options {
+    display: none;
+}
+div.no-input section.question-options:has(div.sd-card.correct),
+div.no-input section.question-options:has(div.sd-card.incorrect),
+div.no-input section.question-options:has(div.sd-card.neutral) {
+    display: block;
 }

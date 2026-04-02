@@ -843,6 +843,7 @@ def setup(app) -> Dict[str, Any]:
         "teachbooks_mcss.js",
         "teachbooks_mcms.js",
         "teachbooks_sab.js",
+        "teachbooks_nins.js",
     ]
     for js_file in js_files:
         app.add_js_file(js_file)
