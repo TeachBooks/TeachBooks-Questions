@@ -626,18 +626,11 @@ function tunedSimilarity(student, correct) {
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
             mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(/>=/g, "\\geq").replace(/<=/g, "\\leq");
-          } else if (mathField.classList.contains('type-MAP')) {
-            // for MAP type, we want to show some extra text to indicate the correct answer is a range
+          } else if (mathField.classList.contains('type-MAP') || mathField.classList.contains('type-MRP')) {
+            // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
             parts = answerSection.textContent.trim().split(';');
             centre = parts[0].trim();
-            radius = parts[1].trim();
-            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius;
-          } else if (mathField.classList.contains('type-MRP')) {
-            // for MRP type, we want to show some extra text to indicate the correct answer is a range
-            parts = answerSection.textContent.trim().split(';');
-            centre = parts[0].trim();
-            radius = parts[1].trim();
-            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius + '\\cdot |\left(' + centre + '\right)|';
+            mathField.value = centre;
           }
 
           configureMathFieldHorizontalScroll(mathField);
