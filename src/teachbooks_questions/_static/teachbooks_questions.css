@@ -73,7 +73,7 @@ div.multiple-choice section.question-options div.sd-card.option div.sd-card-body
 }
 
 /* Styling of the feedback in the footers */
-section.question-options div.sd-card-footer:not(.correct):not(.incorrect) {
+section.question-options div.sd-card-footer:not(.correct):not(.incorrect):not(.parsing-error) {
     display: none;
 }
 section.question-options div.sd-card-footer.correct {
@@ -94,6 +94,17 @@ div.multiple-choice section.question-options div.sd-card-footer.incorrect:hover 
     background-color: var(--question-red-hover);
 }
 div.multiple-choice section.question-options div.sd-card:has(div.sd-card-footer.incorrect:hover) div.sd-card-body.selected {
+    background-color: var(--question-blue-hover);
+}
+
+section.question-options div.sd-card-footer.parsing-error {
+    display: block;
+    background-color: var(--question-blue);
+}
+div.multiple-choice section.question-options div.sd-card-footer.parsing-error:hover {
+    background-color: var(--question-blue-hover);
+}
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-footer.parsing-error:hover) div.sd-card-body.selected {
     background-color: var(--question-blue-hover);
 }
 
@@ -207,13 +218,21 @@ div.short-answer.blocks section.question-options div.sd-card-body.input textarea
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }
-div.short-answer.blocks section.question-options div.sd-card-footer.correct section.incorrect {
+div.short-answer.blocks section.question-options div.sd-card-footer.correct section.incorrect,
+div.short-answer.blocks section.question-options div.sd-card-footer.correct section.parsing-error {
     display: none;
 }
 
-div.short-answer.blocks section.question-options div.sd-card-footer.incorrect section.correct {
+div.short-answer.blocks section.question-options div.sd-card-footer.incorrect section.correct,
+div.short-answer.blocks section.question-options div.sd-card-footer.incorrect section.parsing-error {
     display: none;
 }
+
+div.short-answer.blocks section.question-options div.sd-card-footer.parsing-error section.correct,
+div.short-answer.blocks section.question-options div.sd-card-footer.parsing-error section.incorrect {
+    display: none;
+}
+
 div.short-answer.blocks section.question-options div.sd-card-body.input section.question-option-answer {
     display: none;
 }
@@ -282,7 +301,7 @@ div.multiple-choice div.sd-card .sd-card-body:not(.selected, .incorrect, .correc
 div.short-answer div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
 div.no-input div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
 div.multiple-choice .sd-card .sd-card-footer:not(.correct, .incorrect),
-div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect),
+div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect, .parsing-error),
 div.no-input .sd-card .sd-card-footer:not(.correct, .incorrect)
  {
     background-color: transparent !important;

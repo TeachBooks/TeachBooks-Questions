@@ -557,7 +557,17 @@ class QuestionDirective(SphinxDirective):
                     option["incorrect_feedback"], self.content_offset, incorrect_section
                 )
                 container += incorrect_section
-            
+
+                # Add parsing error feedback (for cases where answer can't be parsed, e.g. invalid math input)
+                error_section = nodes.section(
+                    classes=["question-feedback", "parsing-error"],
+                    ids=[f"{node_id}-option-{current_card}-feedback-parsing-error"]
+                )
+                self.state.nested_parse(
+                    [r"We couldn't parse your answer. You most likely made a mistake in the $\LaTeX$ syntax."], self.content_offset, error_section
+                )
+                container += error_section
+
     def _handle_multiple_choice_shared(
         self, node: Node, node_id: str, columns: str, feedback: Dict
     ) -> Node:

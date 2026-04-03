@@ -544,7 +544,7 @@ function tunedSimilarity(student, correct) {
     if (questionOptionsSection) {
       clearShowAnswerMode(questionDiv, true, true);
       questionOptionsSection.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
-        footer.classList.remove('correct', 'incorrect');
+        footer.classList.remove('correct', 'incorrect', 'parsing-error');
       });
     }
   }
@@ -574,7 +574,18 @@ function tunedSimilarity(student, correct) {
         return;
       }
 
-      footer.classList.remove('correct', 'incorrect');
+      footer.classList.remove('correct', 'incorrect', 'parsing-error');
+
+      // Now check the submitted answer for parsing errors and correctness
+      if (mathField) {
+        parsed = ce.parse(mathField.value).evaluate().json;
+        if (containsError(parsed)) {
+          // display the footer as incorrect with a message about parsing error.
+          // done by the class 'parsing-error'
+          footer.classList.add('parsing-error');
+          return;
+        }
+      }
 
       const answerType = getAnswerType(textArea || mathField);
       const correctAnswer = answerSection ? answerSection.textContent.trim() : null;
@@ -605,7 +616,7 @@ function tunedSimilarity(student, correct) {
         return;
       }
 
-      footer.classList.remove('incorrect');
+      footer.classList.remove('incorrect', 'parsing-error');
       footer.classList.add('correct');
 
       if (textArea) {
@@ -666,7 +677,7 @@ function tunedSimilarity(student, correct) {
     clearShowAnswerMode(questionDiv, true, false);
     // Remove all feedback
     questionDiv.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
-      footer.classList.remove('correct', 'incorrect');
+      footer.classList.remove('correct', 'incorrect', 'parsing-error');
     });
   }
 
@@ -704,3 +715,25 @@ function tunedSimilarity(student, correct) {
     configureAllMathFields();
   }
 })();
+
+function containsError(node) {
+  if (node === null || node === undefined) return false;
+
+  // If it's an Error expression
+  if (Array.isArray(node) && node[0] === "Error") {
+    return true;
+  }
+
+  // If it's an array, recursively check all children
+  if (Array.isArray(node)) {
+    return node.some(child => containsError(child));
+  }
+
+  // If it's an object (rare in canonical MathJSON), scan values
+  if (typeof node === "object") {
+    return Object.values(node).some(value => containsError(value));
+  }
+
+  // Primitive (string, number, symbol) → no error
+  return false;
+}
