@@ -127,16 +127,16 @@ function valueInIntervalNumerical(value, interval) {
 
 function checkAbsolutePrecision(value, correct, precision) {
   // Convert to interval format and use the valueInIntervalNumerical function
-  const lowerBound = ce.box(["Subtract", ce.parse(correct), ce.parse(precision)]).valueOf();
-  const upperBound = ce.box(["Add", ce.parse(correct), ce.parse(precision)]).valueOf();
+  const lowerBound = ce.box(["Subtract", ce.parse(correct), ce.parse(precision)]).toLatex();
+  const upperBound = ce.box(["Add", ce.parse(correct), ce.parse(precision)]).toLatex();
   const interval = `${lowerBound} <= x <= ${upperBound}`;
   return valueInIntervalNumerical(value, interval);
 }
 
 function checkRelativePrecision(value, correct, precision) {
   // Reuse absolute precision checking by calculating the absolute precision from the relative precision
-  const absCenter = ce.box(["Abs", ce.parse(correct)]).evaluate().valueOf();
-  const absPrecision = ce.box(["Multiply", absCenter, ce.parse(precision)]).valueOf();
+  const absCenter = ce.box(["Abs", ce.parse(correct)]);
+  const absPrecision = ce.box(["Multiply", absCenter, ce.parse(precision)]).toLatex();
   return checkAbsolutePrecision(value, correct, absPrecision);
 }
 
