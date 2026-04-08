@@ -771,6 +771,12 @@ class QuestionDirective(SphinxDirective):
             "",
             "Try again! You missed at least one correct option.",
             ":::",
+            ":::{grid-item-card}",
+            ":shadow: lg",
+            ":class-card: incorrect-missed",
+            "",
+            "Try again! You selected at least one incorrect option and missed at least one correct option.",
+            ":::",
             "::::",
         ]
         self.state.nested_parse(feedback_grid, self.content_offset, feedback_section)

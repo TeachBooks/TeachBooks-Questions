@@ -126,13 +126,12 @@
     const classesToShow = [];
     if (numberOfCorrectSelected === numberOfCorrect && numberOfIncorrectSelected === 0) {
       classesToShow.push('correct');
-    } else {
-      if (numberOfCorrect > numberOfCorrectSelected) {
-        classesToShow.push('missed');
-      }
-      if (numberOfIncorrectSelected > 0) {
-        classesToShow.push('incorrect');
-      }
+    } else if (numberOfCorrect > numberOfCorrectSelected && numberOfIncorrectSelected == 0) {
+      classesToShow.push('missed');
+    } else if (numberOfCorrect > numberOfCorrectSelected && numberOfIncorrectSelected > 0) {
+      classesToShow.push('incorrect-missed');
+    } else if (numberOfIncorrectSelected > 0) {
+      classesToShow.push('incorrect');
     }
 
     const overallFeedbackSection = getOverallFeedbackSection(questionDiv);
