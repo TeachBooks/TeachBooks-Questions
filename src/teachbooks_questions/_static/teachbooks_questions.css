@@ -76,9 +76,24 @@ div.multiple-choice section.question-options div.sd-card.option div.sd-card-body
 section.question-options div.sd-card-footer:not(.correct):not(.incorrect):not(.parsing-error) {
     display: none;
 }
+section.question-options div.sd-card-footer:not(.correct):not(.incorrect):not(.parsing-error) section {
+    display: none;
+}
 section.question-options div.sd-card-footer.correct {
     display: block;
     background-color: var(--question-green);
+}
+section.question-options div.sd-card-footer.show-feedback section.question-feedback {
+    display: block;
+}
+section.question-options div.sd-card-footer.show-feedback section.question-show {
+    display: none;
+}
+section.question-options div.sd-card-footer.show-answer section.question-show {
+    display: block;
+}
+section.question-options div.sd-card-footer.show-answer section.question-feedback {
+    display: none;
 }
 div.multiple-choice section.question-options div.sd-card-footer.correct:hover {
     background-color: var(--question-green-hover);
@@ -115,10 +130,10 @@ div.multiple-choice section.question-options div.sd-card-body.selected {
 div.multiple-choice section.question-options div.sd-card-body.selected:hover {
     background-color: var(--question-blue-hover);
 }
-div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body.selected:hover) div.sd-card-footer.correct {
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body:hover) div.sd-card-footer.correct {
     background-color: var(--question-green-hover);
 }
-div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body.selected:hover) div.sd-card-footer.incorrect {
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body:hover) div.sd-card-footer.incorrect {
     background-color: var(--question-red-hover);
 }
 

@@ -42,12 +42,14 @@ Select a correct answer.
 ---
 [x] This is an answer.
 > Which is also a correct answer.
+& Hint: This is a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is the third answer.
 > :::{warning}
 That is not correct.
 :::
 [x] This is the correct answer.
+& Hint: This is another correct answer.
 ---
 Did you find all correct answers?
 ::::
@@ -61,12 +63,14 @@ Select a correct answer.
 ---
 [x] This is an answer.
 > Which is also a correct answer.
+& Hint: This is a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is the third answer.
 > :::{warning}
 That is not correct.
 :::
 [x] This is the correct answer.
+& Hint: This is another correct answer.
 ---
 Did you find all correct answers?
 ::::
@@ -82,12 +86,14 @@ Select a correct answer.
 ---
 [x] This is an answer.
 > Which is also a correct answer.
+& Hint: This is a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is the third answer.
 > :::{warning}
 That is not correct.
 :::
 [x] This is the correct answer.
+& Hint: This is another correct answer.
 ---
 Did you find all correct answers?
 ::::
@@ -101,12 +107,14 @@ Select a correct answer.
 ---
 [x] This is an answer.
 > Which is also a correct answer.
+& Hint: This is a correct answer.
 [ ] This is an incorrect answer.
 [ ] This is the third answer.
 > :::{warning}
 That is not correct.
 :::
 [x] This is the correct answer.
+& Hint: This is another correct answer.
 ---
 Did you find all correct answers?
 ::::

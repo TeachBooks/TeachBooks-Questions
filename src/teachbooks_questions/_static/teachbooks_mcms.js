@@ -27,7 +27,7 @@
     questionSection
       .querySelectorAll('div.sd-card-footer.correct, div.sd-card-footer.incorrect')
       .forEach(function (feedbackOption) {
-        feedbackOption.classList.remove('correct', 'incorrect');
+        feedbackOption.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
       });
 
     questionSection
@@ -72,7 +72,7 @@
           body.classList.remove('selected', 'correct', 'incorrect');
         }
         if (footer) {
-          footer.classList.remove('correct', 'incorrect');
+          footer.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
         }
       });
     }
@@ -106,19 +106,22 @@
       if (body) {
         body.classList.remove('correct', 'incorrect');
       }
+      if (footer) {
+        footer.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
+      }
 
       if (isCorrect) {
         numberOfCorrect += 1;
         if (body && body.classList.contains('selected')) {
           numberOfCorrectSelected += 1;
           if (footer) {
-            footer.classList.add('correct');
+            footer.classList.add('correct', 'show-feedback');
           }
         }
       } else if (body && body.classList.contains('selected')) {
         numberOfIncorrectSelected += 1;
         if (footer) {
-          footer.classList.add('incorrect');
+          footer.classList.add('incorrect', 'show-feedback');
         }
       }
     });
@@ -166,12 +169,12 @@
         return;
       }
 
-      const feedbackSection = footer.querySelector('section.question-feedback');
+      const feedbackSection = footer.querySelector('section.question-show');
       const isCorrect = !!feedbackSection && feedbackSection.classList.contains('correct');
 
-      footer.classList.remove('correct', 'incorrect');
+      footer.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
       body.classList.remove('correct', 'incorrect');
-      footer.classList.add(isCorrect ? 'correct' : 'incorrect');
+      footer.classList.add(isCorrect ? 'correct' : 'incorrect', 'show-answer');
     });
 
     clearOverallFeedback(questionDiv);

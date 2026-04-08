@@ -106,6 +106,7 @@ To define a single correct option, add code of the form
 ````text
 [x] <Option>
 > <Feedback>
+& <ShowAnswerFeedback>
 ````
 
 and to define a single incorrect option, add code of the form
@@ -113,11 +114,14 @@ and to define a single incorrect option, add code of the form
 ````text
 [ ] <Option>
 > <Feedback>
+& <ShowAnswerFeedback>
 ````
 
-The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same option.
+The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same option.
 
-The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
+The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
+
+The placeholder `<ShowAnswerFeedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `& ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. ShowAnswerFeedback is optional, and if not provided, the feedback will be set to the value of the `<Feedback>` placeholder (or its default). This feedback will be shown when the user clicks the "Show answer" button, and it can be used to provide more detailed feedback or explanations related to the correct answer(s).
 
 A short example of allowed code:
 
@@ -130,13 +134,20 @@ has several lines and is also marked as correct answer.
 You can include directives.
 :::
 
+& This feedback will be shown when the user clicks the "Show answer" button.
+
 [ ] An incorrect option.
 
 > $$
 \int_{a}^{b} f(x)\,dx.
 $$
 
-Display math is also possible.
+Display math is also possible. This feedback will also be shown when the user clicks the "Show answer" button, since no specific show answer feedback is provided for this option.
+
+[ ] Another incorrect option without specific feedback or show answer feedback. This will use the default feedback for both, which is `Incorrect.`.
+
+[x] Another correct option without specific feedback, but with specific show answer feedback.
+& This feedback will be shown when the user clicks the "Show answer" button, but since no specific feedback is provided for this option, the default `Correct!` feedback will be shown when the user selects this option as an answer.
 ````
 
 ### Syntax for short-answer blocks questions

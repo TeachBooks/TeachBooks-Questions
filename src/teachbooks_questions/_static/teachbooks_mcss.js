@@ -16,7 +16,7 @@
         body.classList.remove('selected', 'correct', 'incorrect');
       }
       if (footer) {
-        footer.classList.remove('correct', 'incorrect');
+        footer.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
       }
     });
   }
@@ -35,9 +35,9 @@
     const isCorrect = !!feedbackSection && feedbackSection.classList.contains('correct');
 
     if (isCorrect) {
-      footer.classList.add('correct');
+      footer.classList.add('correct', 'show-feedback');
     } else {
-      footer.classList.add('incorrect');
+      footer.classList.add('incorrect', 'show-feedback');
     }
   }
 
@@ -54,7 +54,7 @@
       // Toggle unselect
       body.classList.remove('selected', 'correct', 'incorrect');
       if (footer) {
-        footer.classList.remove('correct', 'incorrect');
+        footer.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
       }
       return;
     }
@@ -98,12 +98,12 @@
         return;
       }
 
-      const feedbackSection = footer.querySelector('section.question-feedback');
+      const feedbackSection = footer.querySelector('section.question-show');
       const isCorrect = !!feedbackSection && feedbackSection.classList.contains('correct');
 
-      footer.classList.remove('correct', 'incorrect');
+      footer.classList.remove('correct', 'incorrect', 'show-answer', 'show-feedback');
       body.classList.remove('correct', 'incorrect');
-      footer.classList.add(isCorrect ? 'correct' : 'incorrect');
+      footer.classList.add(isCorrect ? 'correct' : 'incorrect', 'show-answer');
     });
   }
 

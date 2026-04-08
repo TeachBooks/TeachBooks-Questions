@@ -20,8 +20,8 @@ class QuestionDirective(SphinxDirective):
     }
     FEEDBACKS = {
         "multiple-choice": {
-            "single-select": {True: "Correct!", False: "Incorrect."},
-            "multiple-select": {True: "Correct!", False: "Incorrect."},
+            "single-select": {True: ["Correct!"], False: ["Incorrect."]},
+            "multiple-select": {True: ["Correct!"], False: ["Incorrect."]},
         },
         "short-answer": {"blocks": {True: "Correct!", False: "Incorrect."}},
         "no-input": {"no-submit": {}}
@@ -39,6 +39,7 @@ class QuestionDirective(SphinxDirective):
     FEEDBACK_WRONG_PREFIX = "> "
     FEEDBACK_CORRECT_PREFIX = "= "
     FEEDBACK_NEUTRAL_PREFIX = "! "
+    FEEDBACK_SHOW_ANSWER_PREFIX = "& "
     SEPARATOR = "---"
     
     has_content = True
@@ -626,27 +627,67 @@ class QuestionDirective(SphinxDirective):
         first_line = block[0].strip()
         is_correct = first_line[1] == "x"
         
-        # Extract option content and feedback
+        # Extract option content, feedback and "show answer" feedback
         fb_starts = [
             i for i, line in enumerate(block)
             if line.strip().startswith(self.FEEDBACK_WRONG_PREFIX)
         ]
+        fb_show = [
+            i for i, line in enumerate(block)
+            if line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX)
+        ]
 
-        if fb_starts:
+        if fb_starts and not fb_show:
+            # only regular feedback provided
+            # use regular feedback for both regular and show answer feedback
             fb_start = fb_starts[0]
             option_content = block[:fb_start]
             option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
             option_feedback = block[fb_start:]
             option_feedback[0] = option_feedback[0].strip()[2:]  # Remove "> "
+            option_show_answer_feedback = option_feedback
+        elif fb_show and not fb_starts:
+            # only show answer feedback provided
+            # use default feedback for regular feedback
+            fb_show_start = fb_show[0]
+            option_content = block[:fb_show_start]
+            option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+            option_feedback = feedback[is_correct]
+            option_show_answer_feedback = block[fb_show_start:]
+            option_show_answer_feedback[0] = option_show_answer_feedback[0].strip()[2:]  # Remove "& "
+        elif fb_starts and fb_show:
+            # both regular and show answer feedback provided
+            # order might be mixed, so determine which comes first
+            fb_start = fb_starts[0]
+            fb_show_start = fb_show[0]
+            if fb_start < fb_show_start:
+                # regular feedback comes first
+                option_content = block[:fb_start]
+                option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+                option_feedback = block[fb_start:fb_show_start]
+                option_feedback[0] = option_feedback[0].strip()[2:]  # Remove "> "
+                option_show_answer_feedback = block[fb_show_start:]
+                option_show_answer_feedback[0] = option_show_answer_feedback[0].strip()[2:]  # Remove "& "
+            else:
+                # show answer feedback comes first
+                option_content = block[:fb_show_start]
+                option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+                option_show_answer_feedback = block[fb_show_start:fb_start]
+                option_show_answer_feedback[0] = option_show_answer_feedback[0].strip()[2:]  # Remove "& "
+                option_feedback = block[fb_start:]
+                option_feedback[0] = option_feedback[0].strip()[2:]  # Remove "> "
         else:
+            # no regular or show answer feedback provided, use default feedback twice
             option_content = block
             option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
             option_feedback = [feedback[is_correct]]
+            option_show_answer_feedback = option_feedback
 
         return {
             "is_correct": is_correct,
             "content": option_content,
             "feedback": option_feedback,
+            "show": option_show_answer_feedback,
         }
 
     def _render_multiple_choice_cards(
@@ -710,6 +751,7 @@ class QuestionDirective(SphinxDirective):
                 container += option_section
             elif "sd-card-footer" in card_classes:
                 option = options[current_card]
+                # regular feedback
                 feedback_class = "correct" if option["is_correct"] else "incorrect"
                 feedback_section = nodes.section(
                     classes=["question-feedback", feedback_class],
@@ -720,6 +762,16 @@ class QuestionDirective(SphinxDirective):
                 )
                 feedback_section["data-correct"] = option["is_correct"]
                 container += feedback_section
+                # show answer feedback
+                show_section = nodes.section(
+                    classes=["question-show", feedback_class],
+                    ids=[f"{node_id}-show-{current_card}"]
+                )
+                self.state.nested_parse(
+                    option["show"], self.content_offset, show_section
+                )
+                feedback_section["data-correct"] = option["is_correct"]
+                container += show_section
 
     def _handle_multiple_choice_single_select(
         self, node: Node, node_id: str, columns: str, feedback: Dict
