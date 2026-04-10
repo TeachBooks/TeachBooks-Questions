@@ -23,7 +23,7 @@ class QuestionDirective(SphinxDirective):
             "single-select": {True: ["Correct!"], False: ["Incorrect."]},
             "multiple-select": {True: ["Correct!"], False: ["Incorrect."]},
         },
-        "short-answer": {"blocks": {True: "Correct!", False: "Incorrect."}},
+        "short-answer": {"blocks": {True: ["Correct!"], False: ["Incorrect."]}},
         "no-input": {"no-submit": {}}
 
     }
@@ -240,10 +240,6 @@ class QuestionDirective(SphinxDirective):
 
         # Parse feedback options
         options_data = self._parse_no_input_options(options_raw, feedback, node_id)
-        logger.info(f"Parsed {len(options_data)} feedback options for no-input question at line {self.lineno} in {self.env.docname}:",color='fuchsia')
-        for idx, option in enumerate(options_data):
-            logger.info(f"  Option {idx + 1}: type={option['type']}, "
-                        f"feedback={option['feedback']}, ",color='fuchsia')
         
         # Render feedback options as cards
         self._render_no_input_cards(node, node_id, options_data, columns)
@@ -422,8 +418,7 @@ class QuestionDirective(SphinxDirective):
         while line_idx < len(block):
             line = block[line_idx].strip()
             if line.startswith(self.FEEDBACK_WRONG_PREFIX) or line.startswith(
-                self.FEEDBACK_CORRECT_PREFIX
-            ):
+                self.FEEDBACK_CORRECT_PREFIX) or line.startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX):
                 break
             label.append(line)
             line_idx += 1
@@ -431,6 +426,7 @@ class QuestionDirective(SphinxDirective):
         # Extract feedback
         correct_fb = []
         incorrect_fb = []
+        show_fb = []
         
         if line_idx < len(block):
             last_type = None
@@ -446,15 +442,26 @@ class QuestionDirective(SphinxDirective):
                         correct_fb.append("")
                     correct_fb.append(line[2:])
                     last_type = "correct"
+                elif line.startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX):
+                    if show_fb:
+                        show_fb.append("")
+                    show_fb.append(line[2:])
+                    last_type = "show"
                 else:
                     if last_type == "incorrect":
                         incorrect_fb.append(line)
                     elif last_type == "correct":
                         correct_fb.append(line)
+                    elif last_type == "show":
+                        show_fb.append(line)
                 line_idx += 1
-        else:
-            correct_fb = [feedback[True]]
-            incorrect_fb = [feedback[False]]
+        # Set defaults if not provided
+        if not correct_fb:
+            correct_fb = feedback[True]
+        if not incorrect_fb:
+            incorrect_fb = feedback[False]
+        if not show_fb:
+            show_fb = correct_fb  # Default show answer feedback is the same as correct feedback
 
         return {
             "type": option_type,
@@ -462,6 +469,7 @@ class QuestionDirective(SphinxDirective):
             "label": label or [""],
             "correct_feedback": correct_fb,
             "incorrect_feedback": incorrect_fb,
+            "show_answer_feedback": show_fb,
         }
 
     def _render_short_answer_cards(self, node: Node, node_id: str, options: List[Dict], columns: str) -> None:
@@ -558,6 +566,16 @@ class QuestionDirective(SphinxDirective):
                     option["incorrect_feedback"], self.content_offset, incorrect_section
                 )
                 container += incorrect_section
+
+                # Add show answer feedback
+                show_answer_section = nodes.section(
+                    classes=["question-feedback", "show-answer"],
+                    ids=[f"{node_id}-option-{current_card}-feedback-show-answer"]
+                )
+                self.state.nested_parse(
+                    option["show_answer_feedback"], self.content_offset, show_answer_section
+                )
+                container += show_answer_section
 
                 # Add parsing error feedback (for cases where answer can't be parsed, e.g. invalid math input)
                 error_section = nodes.section(
@@ -680,7 +698,7 @@ class QuestionDirective(SphinxDirective):
             # no regular or show answer feedback provided, use default feedback twice
             option_content = block
             option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
-            option_feedback = [feedback[is_correct]]
+            option_feedback = feedback[is_correct]
             option_show_answer_feedback = option_feedback
 
         return {

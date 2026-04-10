@@ -37,6 +37,7 @@ We start this section with show casing the three types of questions that can be 
 ::::{question} Multiple-choice Single-select
 :type: multiple-choice
 :variant: single-select
+:showanswer:
 
 Select a correct answer.
 ---
@@ -58,6 +59,7 @@ Did you find all correct answers?
 ::::{question} Multiple-choice Single-select
 :type: multiple-choice
 :variant: single-select
+:showanswer:
 
 Select a correct answer.
 ---
@@ -81,6 +83,7 @@ Did you find all correct answers?
 ::::{question} Multiple-choice Multiple-select
 :type: multiple-choice
 :variant: multiple-select
+:showanswer:
 
 Select a correct answer.
 ---
@@ -102,6 +105,7 @@ Did you find all correct answers?
 ::::{question} Multiple-choice Multiple-select
 :type: multiple-choice
 :variant: multiple-select
+:showanswer:
 
 Select a correct answer.
 ---
@@ -127,6 +131,8 @@ For this example we will only show case two input blocks, but more can be added 
 ::::{question} Short-answer blocks
 :type: short-answer
 :variant: blocks
+:showanswer:
+
 Fill in the correct answer in the input fields.
 ---
 T[TeachBooks] The correct answer is _TeachBooks_:
@@ -134,6 +140,7 @@ T[TeachBooks] The correct answer is _TeachBooks_:
 > Did you make a typo? Try again. Remember that the answer is case-sensitive.
 
 MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
+& Hint: The answer is a number, so it cannot be negative and cannot be larger than 1.
 ---
 What do you think?
 ::::
@@ -142,6 +149,8 @@ What do you think?
 ::::{question} Short-answer blocks
 :type: short-answer
 :variant: blocks
+:showanswer:
+
 Fill in the correct answer in the input fields.
 ---
 T[TeachBooks] The correct answer is _TeachBooks_:
@@ -149,6 +158,7 @@ T[TeachBooks] The correct answer is _TeachBooks_:
 > Did you make a typo? Try again. Remember that the answer is case-sensitive.
 
 MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
+& Hint: The answer is a number, so it cannot be negative and cannot be larger than 1.
 ---
 What do you think?
 ::::
@@ -177,7 +187,9 @@ This is a question without input fields or submit buttons. It can be used to pro
 ---
 > This is the feedback that will be shown when the "Show answer" button is clicked. It can contain any content that Sphinx can render, including roles, directives and math. Code spanning multiple lines is also allowed.
 
-> This is a second feedback option, which will be shown as a second card when the "Show answer" button is clicked.
+= This is a second feedback option, which will be shown as a second card when the "Show answer" button is clicked.
+
+! A third option is also available, which can be used for neutral or informative feedback that is neither correct nor incorrect.
 ---
 ::::
 

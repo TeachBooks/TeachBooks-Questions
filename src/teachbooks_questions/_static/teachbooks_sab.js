@@ -544,7 +544,7 @@ function tunedSimilarity(student, correct) {
     if (questionOptionsSection) {
       clearShowAnswerMode(questionDiv, true, true);
       questionOptionsSection.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
-        footer.classList.remove('correct', 'incorrect', 'parsing-error');
+        footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
       });
     }
   }
@@ -574,7 +574,7 @@ function tunedSimilarity(student, correct) {
         return;
       }
 
-      footer.classList.remove('correct', 'incorrect', 'parsing-error');
+      footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
 
       // Now check the submitted answer for parsing errors and correctness
       if (mathField) {
@@ -616,8 +616,8 @@ function tunedSimilarity(student, correct) {
         return;
       }
 
-      footer.classList.remove('incorrect', 'parsing-error');
-      footer.classList.add('correct');
+      footer.classList.remove('correct','incorrect', 'parsing-error');
+      footer.classList.add('show-answer');
 
       if (textArea) {
         textArea.classList.add('show-answer');
@@ -677,7 +677,7 @@ function tunedSimilarity(student, correct) {
     clearShowAnswerMode(questionDiv, true, false);
     // Remove all feedback
     questionDiv.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
-      footer.classList.remove('correct', 'incorrect', 'parsing-error');
+      footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
     });
   }
 
