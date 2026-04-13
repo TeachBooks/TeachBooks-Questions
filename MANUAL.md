@@ -97,6 +97,9 @@ That is not correct.
 :::
 [x] This is the correct answer.
 & Hint: This is another correct answer.
+^^^
+= You did a very good job! You found all the correct answers.
+! Too bad, you missed a correct answer. 
 ---
 Did you find all correct answers?
 ::::
@@ -119,6 +122,9 @@ That is not correct.
 :::
 [x] This is the correct answer.
 & Hint: This is another correct answer.
+^^^
+= You did a very good job! You found all the correct answers.
+! Too bad, you missed a correct answer. 
 ---
 Did you find all correct answers?
 ::::
