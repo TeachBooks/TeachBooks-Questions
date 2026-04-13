@@ -5,9 +5,9 @@ from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
 from docutils.nodes import Node
 from docutils.parsers.rst import directives
-from sphinx.util import logging
+# from sphinx.util import logging
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 class QuestionDirective(SphinxDirective):
@@ -21,7 +21,11 @@ class QuestionDirective(SphinxDirective):
     FEEDBACKS = {
         "multiple-choice": {
             "single-select": {True: ["Correct!"], False: ["Incorrect."]},
-            "multiple-select": {True: ["Correct!"], False: ["Incorrect."]},
+            "multiple-select": {True: ["Correct!"], False: ["Incorrect."],
+                                "correct": ["Well done!"],
+                                "incorrect" : ["Try again! You selected at least one incorrect option."],
+                                "missed": ["Try again! You missed at least one correct option."],
+                                "incorrect-missed": ["Try again! You selected at least one incorrect option and missed at least one correct option."] }
         },
         "short-answer": {"blocks": {True: ["Correct!"], False: ["Incorrect."]}},
         "no-input": {"no-submit": {}}
@@ -41,6 +45,7 @@ class QuestionDirective(SphinxDirective):
     FEEDBACK_NEUTRAL_PREFIX = "! "
     FEEDBACK_SHOW_ANSWER_PREFIX = "& "
     SEPARATOR = "---"
+    GENERAL_FEEDBACK_SEPARATOR = "^^^"
     
     has_content = True
     required_arguments = 0
@@ -224,16 +229,33 @@ class QuestionDirective(SphinxDirective):
                 f"Too many separators in question at line {self.lineno} in {self.env.docname}. "
                 f"Extra separators at lines: {extra_lines}"
             )
-        
-        pre_text = self.content[:separators[0]]
-        options_raw = self.content[separators[0] + 1:separators[1]]
-        post_text = self.content[separators[1] + 1:]
-        
-        return pre_text, options_raw, post_text
+        # handle general feedback for multiple-select questions
+        general_separator = [i for i, line in enumerate(self.content) if line.strip() == self.GENERAL_FEEDBACK_SEPARATOR]
+        if len(general_separator) > 1:
+            raise ValueError(
+            f"Malformed question at line {self.lineno} in {self.env.docname}. "
+            f"Please only provided one general feedback section"
+            f"starting with '{self.GENERAL_FEEDBACK_SEPARATOR}'"
+            f"between '{self.SEPARATOR}' and '{self.SEPARATOR}'. "
+            f"Found {len(general_separator)} separator(s), expected at most 1."
+        )
+
+        if general_separator:
+            pre_text = self.content[:separators[0]]
+            options_raw = self.content[separators[0] + 1:general_separator[0]]
+            general_raw = self.content[general_separator[0] + 1:separators[1]]
+            post_text = self.content[separators[1] + 1:]
+        else:
+            pre_text = self.content[:separators[0]]
+            options_raw = self.content[separators[0] + 1:separators[1]]
+            post_text = self.content[separators[1] + 1:]
+            general_raw = []
+
+        return pre_text, options_raw, general_raw, post_text
     
     def _handle_no_input_no_submit(self, node: Node, node_id: str, feedback: Dict, columns: str) -> List[Node]:
         """Handle no-input no-submit questions."""
-        pre_text, options_raw, post_text = self._split_input()
+        pre_text, options_raw, _, post_text = self._split_input()
 
         # Add pre-text if present
         self._add_text_section(node, node_id, pre_text, "pretext")
@@ -351,7 +373,7 @@ class QuestionDirective(SphinxDirective):
 
     def _handle_short_answer_blocks(self, node: Node, node_id: str, feedback: Dict, columns: str) -> List[Node]:
         """Handle short-answer block questions."""
-        pre_text, options_raw, post_text = self._split_input()
+        pre_text, options_raw, _, post_text = self._split_input()
 
         # Add pre-text if present
         self._add_text_section(node, node_id, pre_text, "pretext")
@@ -591,7 +613,7 @@ class QuestionDirective(SphinxDirective):
         self, node: Node, node_id: str, columns: str, feedback: Dict
     ) -> Node:
         """Shared logic for multiple-choice question types."""
-        pre_text, options_raw, post_text = self._split_input()
+        pre_text, options_raw, general_raw, post_text = self._split_input()
 
         # Parse options
         options = self._parse_multiple_choice_options(options_raw, feedback)
@@ -613,7 +635,7 @@ class QuestionDirective(SphinxDirective):
         # Add post-text
         self._add_text_section(node, node_id, post_text, "posttext")
 
-        return node
+        return node, general_raw
 
     def _parse_multiple_choice_options(
         self, options_raw: List[str], feedback: Dict
@@ -795,7 +817,7 @@ class QuestionDirective(SphinxDirective):
         self, node: Node, node_id: str, columns: str, feedback: Dict
     ) -> List[Node]:
         """Handle single-select multiple-choice questions."""
-        node = self._handle_multiple_choice_shared(node, node_id, columns, feedback)
+        node, _ = self._handle_multiple_choice_shared(node, node_id, columns, feedback)
 
         # Add buttons
         button_count = 2 if node["show_answer"] else 1
@@ -812,7 +834,48 @@ class QuestionDirective(SphinxDirective):
         self, node: Node, node_id: str, columns: str, feedback: Dict
     ) -> List[Node]:
         """Handle multiple-select multiple-choice questions."""
-        node = self._handle_multiple_choice_shared(node, node_id, columns, feedback)
+        node, general_raw = self._handle_multiple_choice_shared(node, node_id, columns, feedback)
+
+        # split general feedback into 4 sections based on prefixes
+        if general_raw:
+            general_feedback = {}
+            # find the feedback sections based on the prefixes
+            starts = [i for i, line in enumerate(general_raw)
+                      if line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX)
+                      or line.strip().startswith(self.FEEDBACK_WRONG_PREFIX)
+                      or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX)
+                      or line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX)]
+            correct_raw = []
+            incorrect_raw = []
+            missed_raw = []
+            incorrect_missed_raw = []
+            # loop over starting positions and assign feedback to the appropriate section based on the prefix
+            for idx, start in enumerate(starts):
+                end = starts[idx + 1] if idx + 1 < len(starts) else len(general_raw)
+                block = general_raw[start:end]
+                prefix = block[0].strip()[:2]
+                content = list(block)  # make a copy of the block
+                content[0] = content[0].strip()[2:]  # Remove prefix from first line
+                if prefix == self.FEEDBACK_CORRECT_PREFIX:
+                    correct_raw.extend(content)
+                elif prefix == self.FEEDBACK_WRONG_PREFIX:
+                    incorrect_raw.extend(content)
+                elif prefix == self.FEEDBACK_NEUTRAL_PREFIX:
+                    missed_raw.extend(content)
+                elif prefix == self.FEEDBACK_SHOW_ANSWER_PREFIX:
+                    incorrect_missed_raw.extend(content)
+            # fill empty sections with default feedback if not provided
+            general_feedback['correct'] = correct_raw if correct_raw else feedback['correct']
+            general_feedback['incorrect'] = incorrect_raw if incorrect_raw else feedback['incorrect']
+            general_feedback['missed'] = missed_raw if missed_raw else feedback['missed']
+            general_feedback['incorrect_missed'] = incorrect_missed_raw if incorrect_missed_raw else feedback['incorrect-missed']
+        else: # default to using the same feedback for all 4 sections if general feedback is not provided
+            general_feedback = {
+                'correct': feedback["correct"],
+                'incorrect': feedback["incorrect"],
+                'missed': feedback["missed"],
+                'incorrect_missed': feedback["incorrect-missed"]
+            }
 
         # Add overall feedback section
         feedback_section = nodes.section(
@@ -826,30 +889,54 @@ class QuestionDirective(SphinxDirective):
             ":::{grid-item-card}",
             ":shadow: lg",
             ":class-card: correct",
+            ":class-body: correct",
             "",
-            "Well done!",
             ":::",
             ":::{grid-item-card}",
             ":shadow: lg",
             ":class-card: incorrect",
+            ":class-body: incorrect",
             "",
-            "Try again! You selected at least one incorrect option.",
             ":::",
             ":::{grid-item-card}",
             ":shadow: lg",
             ":class-card: missed",
+            ":class-body: missed",
             "",
-            "Try again! You missed at least one correct option.",
             ":::",
             ":::{grid-item-card}",
             ":shadow: lg",
             ":class-card: incorrect-missed",
+            ":class-body: incorrect-missed",
             "",
-            "Try again! You selected at least one incorrect option and missed at least one correct option.",
             ":::",
             "::::",
         ]
         self.state.nested_parse(feedback_grid, self.content_offset, feedback_section)
+        # loop over the 4 feedback cards and populate them with the appropriate general feedback
+        card = 0
+        for container in feedback_section.findall(nodes.container):
+            card_classes = container.get("classes", [])
+            if "sd-card-body" in card_classes:
+                card += 1
+            else:
+                continue
+            if "correct" in card_classes:
+                feedback_content = general_feedback['correct']
+            elif "incorrect" in card_classes:
+                feedback_content = general_feedback['incorrect']
+            elif "missed" in card_classes:
+                feedback_content = general_feedback['missed']
+            elif "incorrect-missed" in card_classes:
+                feedback_content = general_feedback['incorrect_missed']
+            else:
+                continue
+            fb_sub_section = nodes.section(
+                classes=["question-feedback", f"overall-feedback-{card}"],
+                ids=[f"{node_id}-overall-feedback-{card}"]
+            )
+            self.state.nested_parse(feedback_content, self.content_offset, fb_sub_section)
+            container += fb_sub_section
         node += feedback_section
 
         # Add buttons

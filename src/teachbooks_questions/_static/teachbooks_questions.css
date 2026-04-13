@@ -322,6 +322,7 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
   }
 
 div.multiple-choice .sd-card .sd-card-header,
+div.multiple-choice .sd-card .sd-card-body,
 div.short-answer .sd-card .sd-card-header,
 div.no-input .sd-card .sd-card-header,
 div.multiple-choice div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),

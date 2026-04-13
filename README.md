@@ -99,7 +99,7 @@ Each of the options and placeholders will be shortly explained next:
 
 ### Syntax for multiple-choice questions
 
-The code inside `<question>` for `multiple-choice` questions is for both variants based on the same syntax.
+The code inside `<question>` for `multiple-choice` questions is for both variants based on the same syntax._for options_.
 
 To define a single correct option, add code of the form
 
@@ -122,6 +122,28 @@ The placeholder `<Option>` can be any code that can be parsed by Sphinx. This in
 The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
 
 The placeholder `<ShowAnswerFeedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `& ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. ShowAnswerFeedback is optional, and if not provided, the feedback will be set to the value of the `<Feedback>` placeholder (or its default). This feedback will be shown when the user clicks the "Show answer" button, and it can be used to provide more detailed feedback or explanations related to the correct answer(s).
+
+After the options are defined, for the type `multiple-select`, the user can include code of the form
+
+````text
+^^^
+= <CorrectFeedback>
+> <IncorrectFeedback>
+! <MissedFeedback>
+& <MissedAndIncorrectFeedback>
+````
+
+to provide feedback for when the user clicks the "Submit" button, based on whether they selected all correct options and no incorrect options (`<CorrectFeedback>`), at least one incorrect option but no missed correct options (`<IncorrectFeedback>`), at least one missed correct option but no incorrect options (`<MissedFeedback>`) or at least one missed correct option and at least one incorrect option (`<MissedAndIncorrectFeedback>`). Each of these feedback options is optional, and if not provided, the following default feedback will be used:
+
+- `<CorrectFeedback>`: Well done!
+- `<IncorrectFeedback>`: Try again! You selected at least one incorrect option.
+- `<MissedFeedback>`: Try again! You missed at least one correct option.
+- `<MissedAndIncorrectFeedback>`: Try again! You selected at least one incorrect option and missed at least one correct option.
+
+For these feedback options, the same rules apply for the content as for the feedback related to each option:
+- Multiple instances will be combined.
+- The content can be any code that can be parsed by Sphinx, including roles, directives and math.
+- The code can span multiple lines, as long as the first line starts with `= `, `> `, `! ` or `& ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the feedback initiated in an earlier line.
 
 A short example of allowed code:
 
@@ -148,6 +170,8 @@ Display math is also possible. This feedback will also be shown when the user cl
 
 [x] Another correct option without specific feedback, but with specific show answer feedback.
 & This feedback will be shown when the user clicks the "Show answer" button, but since no specific feedback is provided for this option, the default `Correct!` feedback will be shown when the user selects this option as an answer.
+^^^
+= Perfect, you selected all correct options!
 ````
 
 ### Syntax for short-answer blocks questions
