@@ -141,7 +141,7 @@ For this example we will only show case two input blocks, but more can be added 
 
 Fill in the correct answer in the input fields.
 ---
-T[TeachBooks] The correct answer is _TeachBooks_:
+T[TeachBooks ; PRIME] The correct answer is _TeachBooks_ or **PRIME**:
 = Perfect!
 > Did you make a typo? Try again. Remember that the answer is case-sensitive.
 
@@ -159,7 +159,7 @@ What do you think?
 
 Fill in the correct answer in the input fields.
 ---
-T[TeachBooks] The correct answer is _TeachBooks_:
+T[TeachBooks ; PRIME] The correct answer is _TeachBooks_ or **PRIME**:
 = Perfect!
 > Did you make a typo? Try again. Remember that the answer is case-sensitive.
 

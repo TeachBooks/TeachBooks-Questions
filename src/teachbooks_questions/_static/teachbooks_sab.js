@@ -407,35 +407,56 @@ function tunedSimilarity(student, correct) {
 
     switch (answerType) {
       case 'T':
-        return stripped === correctAnswer;
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersT = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+        // check if the stripped student answer matches any of the correct answers exactly
+         return correctAnswersT.includes(stripped)
       case 'TI':
-        return stripped.toLowerCase() === correctAnswer.toLowerCase();
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersTI = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';').toLowerCase());
+        // check if the stripped student answer matches any of the correct answers case-insensitively
+        return correctAnswersTI.includes(stripped.toLowerCase());
       case 'TF':
-        return tunedSimilarity(stripped, correctAnswer) >= 0.9;
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersTF = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+        // check if the stripped student answer matches any of the correct answers case-insensitively
+        for (let ans of correctAnswersTF) {
+          if (tunedSimilarity(stripped, ans) >= 0.9) {
+            return true; // If we've already found a correct answer, no need to check further
+          }
+        }
+        return false; // If no correct answer matched, return false
       case 'M':
         // convert both to Expressions and compare
         try {
-          const studentExpr = ce.parse(stripped);
-          const correctExpr = ce.parse(correctAnswer);
-          const studentEquation = studentExpr.head === 'Equal';
-          const correctEquation = correctExpr.head === 'Equal';
-          if (studentEquation && correctEquation) {
-            const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
-            const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
-            if (evalStudentExpr.isEqual(evalCorrectExpr)) {
-              return true;
+          // loop over correct answers split at unescaped ';' to allow for multiple correct answers, and return true if any of them matches the student answer
+          const correctAnswersM = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+          let correctlyAnswered = false;
+          for (let ans of correctAnswersM) {
+            if (correctlyAnswered) {
+              break; // If we've already found a correct answer, no need to check further
             }
-            negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
-            if (negateStudent.isEqual(evalCorrectExpr)) {
-              return true;
+            const studentExpr = ce.parse(stripped);
+            const correctExpr = ce.parse(ans);
+            const studentEquation = studentExpr.head === 'Equal';
+            const correctEquation = correctExpr.head === 'Equal';
+            if (studentEquation && correctEquation) {
+              const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
+              const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+              if (evalStudentExpr.isEqual(evalCorrectExpr)) {
+                correctlyAnswered = true;
+              }
+              negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
+              if (negateStudent.isEqual(evalCorrectExpr)) {
+                correctlyAnswered = true;
+              }
+            } else if (!studentEquation && !correctEquation) {
+              if (studentExpr.isEqual(correctExpr)) {
+                correctlyAnswered = true;
+              }
             }
-            return false;
-          } else if (!studentEquation && !correctEquation) {
-            return studentExpr.isEqual(correctExpr);
-          } else {
-            return false;
           }
-
+          return correctlyAnswered;
         }
         catch (e) {
           console.error('Error parsing math input: ', e);
@@ -629,11 +650,17 @@ function tunedSimilarity(student, correct) {
 
       if (answerSection) {
         if (textArea) {
-          textArea.value = answerSection.textContent.trim();
+          // for text answers, we add a line for each correct answer (split at unescaped ';')
+          // to make it clearer when there are multiple correct answers
+          // between each line we also add a line with just "    or" to further clarify that any of the answers is correct
+          const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+          textArea.value = correctAnswers.join('\n    or\n');
         }
         if (mathField) {
           if (mathField.classList.contains('type-M')) {
-            mathField.value = answerSection.textContent.trim();
+            // for M type, we want to show just the answers, separated by a mathematical or
+            const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+            mathField.value = correctAnswers.join('\\quad\\text{or}\\quad');
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
             mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(/>=/g, "\\geq").replace(/<=/g, "\\leq");
