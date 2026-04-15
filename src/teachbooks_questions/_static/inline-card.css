@@ -1,0 +1,28 @@
+.inline-card {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: baseline;
+
+  background-color: var(--pst-color-on-background);
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.25rem;
+  color: var(--sd-color-card-text);
+}
+
+.inline-card-body {
+  display: inline;
+
+  padding: 0rem 0.2rem 0rem 0.1rem;
+
+  line-height: inherit;
+  font-size: inherit;
+}
+
+.inline-card-footer {
+  padding: 0rem 0.2rem 0rem 0.1rem;
+  border-top: 1px solid var(--pst-color-border);
+}
+
+.inline-card-footer:last-child {
+  border-radius: 0 0 calc(0.25rem - 1px) calc(0.25rem - 1px);
+}

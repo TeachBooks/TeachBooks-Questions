@@ -5,8 +5,8 @@ from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
 from docutils.nodes import Node
 from docutils.parsers.rst import directives
-# from sphinx.util import logging
 
+# from sphinx.util import logging
 # logger = logging.getLogger(__name__)
 
 
@@ -1009,6 +1009,7 @@ def setup(app) -> Dict[str, Any]:
     
     # Add CSS and JavaScript files
     app.add_css_file("teachbooks_questions.css")
+    app.add_css_file("inline-card.css")
     js_files = [
         "https://cdn.jsdelivr.net/npm/mathlive",
         "https://cdn.jsdelivr.net/npm/@cortex-js/compute-engine/dist/compute-engine.min.js",
@@ -1024,8 +1025,160 @@ def setup(app) -> Dict[str, Any]:
     # Add static files path
     static_path = os.path.join(os.path.dirname(__file__), "_static")
     app.config.html_static_path.append(static_path)
+
+    # Register inline card and nodes
+    app.add_role("inline-card", inline_card_role)
+    app.add_node(
+        inline_card,
+        html=(visit_inline_card_html, depart_inline_card_html),
+    )
+    app.add_node(
+        inline_card_body,
+        html=(visit_inline_card_body_html, depart_inline_card_body_html),
+    )
+    app.add_node(
+        inline_card_footer,
+        html=(visit_inline_card_footer_html, depart_inline_card_footer_html),
+    )
     
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
+
+
+from docutils import nodes
+from docutils.parsers.rst import roles
+
+
+# ----------------------------
+# Node definitions
+# ----------------------------
+
+class inline_card(nodes.Inline, nodes.Element):
+    """Container node for the inline card."""
+
+
+class inline_card_body(nodes.Inline, nodes.Element):
+    """Body part."""
+
+
+class inline_card_footer(nodes.Inline, nodes.Element):
+    """Footer part."""
+
+
+# ----------------------------
+# Role implementation
+# ----------------------------
+
+def _is_escaped(text: str, index: int) -> bool:
+    """Return whether the character at index is escaped by a backslash."""
+    backslash_count = 0
+    current_index = index - 1
+    while current_index >= 0 and text[current_index] == "\\":
+        backslash_count += 1
+        current_index -= 1
+    return backslash_count % 2 == 1
+
+
+def _split_inline_card_text(text: str) -> Tuple[str, str | None]:
+    """Split inline-card text into body and an optional trailing footer.
+
+    The footer is recognized only when the role content ends with an
+    unescaped ``>`` that matches an earlier unescaped ``<``. Nested angle
+    brackets inside the footer are supported so other roles can be used in
+    the footer text.
+    """
+    end_index = len(text) - 1
+    while end_index >= 0 and text[end_index].isspace():
+        end_index -= 1
+
+    if end_index < 0 or text[end_index] != ">" or _is_escaped(text, end_index):
+        return text, None
+
+    depth = 1
+    start_index = None
+    for current_index in range(end_index - 1, -1, -1):
+        current_char = text[current_index]
+        if current_char not in "<>":
+            continue
+        if _is_escaped(text, current_index):
+            continue
+        if current_char == ">":
+            depth += 1
+            continue
+
+        depth -= 1
+        if depth == 0:
+            start_index = current_index
+            break
+
+    if start_index is None:
+        return text, None
+
+    if start_index > 0 and not text[start_index - 1].isspace():
+        return text, None
+
+    body_text = text[:start_index].rstrip().replace("\\>", ">").replace("\\<", "<")
+    footer_text = text[start_index + 1:end_index].strip().replace("\\>", ">").replace("\\<", "<")
+
+    return body_text, footer_text or None
+
+def inline_card_role(name, rawtext, text, lineno, inliner, options=None, content=None):
+    options = options or {}
+
+    # Split BodyText and optional <FooterText>
+    body_text, footer_text = _split_inline_card_text(text)
+    body_text = body_text.strip()
+
+    # Main container
+    card = inline_card()
+
+    # ---- Body ----
+    body_node = inline_card_body()
+    body_children, body_messages = inliner.parse(
+        body_text, lineno, inliner, body_node
+    )
+    body_node += body_children
+    card += body_node
+
+    # ---- Footer (optional) ----
+    if footer_text:
+        footer_node = inline_card_footer()
+        footer_children, footer_messages = inliner.parse(
+            footer_text, lineno, inliner, footer_node
+        )
+        footer_node += footer_children
+        card += footer_node
+    else:
+        footer_messages = []
+
+    return [card], body_messages + footer_messages
+
+
+# ----------------------------
+# HTML translators
+# ----------------------------
+
+def visit_inline_card_html(self, node):
+    self.body.append('<span class="inline-card">')
+
+
+def depart_inline_card_html(self, node):
+    self.body.append('</span>')
+
+
+def visit_inline_card_body_html(self, node):
+    self.body.append('<span class="inline-card-body">')
+
+
+def depart_inline_card_body_html(self, node):
+    self.body.append('</span>')
+
+
+def visit_inline_card_footer_html(self, node):
+    self.body.append('<span class="inline-card-footer">')
+
+
+def depart_inline_card_footer_html(self, node):
+    self.body.append('</span>')
