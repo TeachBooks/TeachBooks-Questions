@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List, Tuple, Dict, Any
 
 from docutils import nodes
@@ -6,8 +7,8 @@ from sphinx.util.docutils import SphinxDirective
 from docutils.nodes import Node
 from docutils.parsers.rst import directives
 
-# from sphinx.util import logging
-# logger = logging.getLogger(__name__)
+from sphinx.util import logging
+logger = logging.getLogger(__name__)
 
 
 class QuestionDirective(SphinxDirective):
@@ -15,7 +16,7 @@ class QuestionDirective(SphinxDirective):
     TYPES = ["multiple-choice", "short-answer","no-input"]
     VARIANTS = {
         "multiple-choice": ["single-select", "multiple-select"],
-        "short-answer": ["blocks"],
+        "short-answer": ["blocks","gaps"],
         "no-input": ["no-submit"]
     }
     FEEDBACKS = {
@@ -27,13 +28,19 @@ class QuestionDirective(SphinxDirective):
                                 "missed": ["Try again! You missed at least one correct option."],
                                 "incorrect-missed": ["Try again! You selected at least one incorrect option and missed at least one correct option."] }
         },
-        "short-answer": {"blocks": {True: ["Correct!"], False: ["Incorrect."]}},
+        "short-answer": {
+            "blocks": {True: ["Correct!"], False: ["Incorrect."]},
+            "gaps": {True: ["Correct!"], False: ["Incorrect."],
+                     "correct": ["You filled in all gaps correctly."],
+                     "incorrect": ["You filled in some gaps correctly, but also some incorrectly."],
+                     "show-answer": ["The correct answers are shown above."] }
+        },
         "no-input": {"no-submit": {}}
 
     }
     COLUMNS = {
         "multiple-choice": {"single-select": "1 1 2 2", "multiple-select": "1 1 2 2"},
-        "short-answer": {"blocks": "1 1 1 1"},
+        "short-answer": {"blocks": "1 1 1 1", "gaps": "1 1 1 1"},
         "no-input": {"no-submit": "1 1 1 1"}
     }
     
@@ -80,6 +87,8 @@ class QuestionDirective(SphinxDirective):
                 f"{self.VARIANTS[question_type]}"
             )
         
+        logger.info(f"Processing question of type '{question_type}' and variant '{variant}' at line {self.lineno} in {self.env.docname}",color="fuchsia")
+        
         columns = self.options.get("columns", self.COLUMNS[question_type][variant])
         feedback = self.options.get("feedback", self.FEEDBACKS[question_type][variant])
 
@@ -120,8 +129,11 @@ class QuestionDirective(SphinxDirective):
                 return self._handle_multiple_choice_single_select(node, node_id, columns, feedback)
             else:  # multiple-select
                 return self._handle_multiple_choice_multiple_select(node, node_id, columns, feedback)
-        elif question_type == "short-answer" and variant == "blocks":
-            return self._handle_short_answer_blocks(node, node_id, feedback, columns)
+        elif question_type == "short-answer":
+            if variant == "blocks":
+                return self._handle_short_answer_blocks(node, node_id, feedback, columns)
+            else:  # gaps
+                return self._handle_short_answer_gaps(node, node_id, feedback, columns)
         else:  # no-input no-submit
             return self._handle_no_input_no_submit(node, node_id, feedback, columns)
 
@@ -370,6 +382,186 @@ class QuestionDirective(SphinxDirective):
             "type": "correct" if first_line.startswith(self.FEEDBACK_CORRECT_PREFIX) else "incorrect" if first_line.startswith(self.FEEDBACK_WRONG_PREFIX) else "neutral",
             "feedback": label or [""],  # For no-input, the label is also the feedback
         }
+    
+    def _parse_general_raw(self, general_raw: List[str], feedback: Dict) -> Dict[str, List[str]]:
+        """Parse general feedback for multiple-select questions."""
+        general = {}
+        # find the feedback sections based on the prefixes
+        starts = [i for i, line in enumerate(general_raw)
+                    if line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX)
+                    or line.strip().startswith(self.FEEDBACK_WRONG_PREFIX)
+                    or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX)
+                    or line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX)]
+        question_raw = []
+        correct_raw = []
+        incorrect_raw = []
+        show_answer_raw = []
+        # loop over starting positions and assign feedback to the appropriate section based on the prefix
+        for idx, start in enumerate(starts):
+            end = starts[idx + 1] if idx + 1 < len(starts) else len(general_raw)
+            block = general_raw[start:end]
+            prefix = block[0].strip()[:2]
+            content = list(block)  # make a copy of the block
+            content[0] = content[0].strip()[2:]  # Remove prefix from first line
+            if prefix == self.FEEDBACK_CORRECT_PREFIX:
+                correct_raw.extend(content)
+            elif prefix == self.FEEDBACK_WRONG_PREFIX:
+                incorrect_raw.extend(content)
+            elif prefix == self.FEEDBACK_NEUTRAL_PREFIX:
+                question_raw.extend(content)
+            elif prefix == self.FEEDBACK_SHOW_ANSWER_PREFIX:
+                show_answer_raw.extend(content)
+        # fill empty sections with default feedback if not provided
+        general['correct'] = correct_raw if correct_raw else feedback['correct']
+        general['incorrect'] = incorrect_raw if incorrect_raw else feedback['incorrect']
+        general['question'] = question_raw
+        general['show-answer'] = show_answer_raw if show_answer_raw else feedback['show-answer']
+
+        return general
+    
+    def _handle_short_answer_gaps(self, node: Node, node_id: str, feedback: Dict, columns: str) -> List[Node]:
+        """Handle short-answer gaps questions."""
+        pre_text, options_raw, general_raw, post_text = self._split_input()
+
+        # Add pre-text if present
+        self._add_text_section(node, node_id, pre_text, "pretext")
+
+        # Parse options
+        options_data = self._parse_short_answer_options(options_raw, feedback, node_id)
+
+        # Do something with the options and the general_raw part
+        if not general_raw:
+            raise ValueError(
+                f"Question variant short-answer of type gaps at line "
+                f"{self.lineno} in {self.env.docname} is malformed. "
+                f"Please provide a section starting with '{self.GENERAL_FEEDBACK_SEPARATOR}' "
+                f"between '{self.SEPARATOR}' and '{self.SEPARATOR}'."
+            )
+        general = self._parse_general_raw(general_raw, feedback)
+        if not general['question']:
+            raise ValueError(
+                f"Question variant short-answer of type gaps at line "
+                f"{self.lineno} in {self.env.docname} is malformed. "
+                f"Please provide a question by including at least one line "
+                f"starting with '{self.FEEDBACK_NEUTRAL_PREFIX}' "
+                f"in the section starting with '{self.GENERAL_FEEDBACK_SEPARATOR}'."
+            )
+        # count the number of gaps and match with the number of options
+        gaps_starts = []
+        for line in general['question']:
+            this_line_starts = [m.start() for m in re.finditer(r"\{gap\}", line)]
+            gaps_starts.extend(this_line_starts)
+        if len(gaps_starts) != len(options_data):
+            raise ValueError(
+                f"Question variant short-answer of type gaps at line "
+                f"{self.lineno} in {self.env.docname} is malformed. "
+                f"The number of gaps indicated by '{{gap}}' in the question "
+                f"does not match the number of options provided. Found "
+                f"{len(gaps_starts)} gaps and {len(options_data)} options."
+            )
+        # Replace {gap} placeholders with empty inline cards
+        general['question'] = [line.replace("{gap}", "{inline-card}`Body <Footer>`") for line in general['question']]
+        
+        # create single full-width card with the question and the inline cards
+        question_markup = [
+            ":::{card}",
+            ":shadow: lg",
+            ":width: 100%",
+            ":class-body: question",
+            "",
+            ":::"
+        ]
+        question_section = nodes.section(
+            classes=["question-text"],
+            ids=[f"{node_id}-question"]
+        )
+        self.state.nested_parse(question_markup, self.content_offset, question_section)
+        node += question_section
+        # find the body of the card and populate it with the parsed question text
+        for container in question_section.findall(nodes.container):
+            card_classes = container.get("classes", [])
+            if "sd-card-body" in card_classes:
+                self.state.nested_parse(
+                    general['question'], self.content_offset, container
+                )
+                break
+        # Find all inline cards and populate them with the corresponding options
+        logger.info(f"Container:\n{container.pformat()}", color="blue")
+        list_of_cards = container.findall(inline_card)
+        for idx, card in enumerate(list_of_cards):
+            logger.info(f"Inline card found:\n{card.pformat()}", color="green")
+            card.classes = [f"option-{idx}"] + card.classes
+            # now take the footer of the card and populate it with the corresponding feedback
+            footer = card.next_node(inline_card_footer)
+            if footer is None:
+                footer = inline_card_footer()
+            footer.clear() # remove dummy content
+            footer.classes = [f"option-{idx}"] + footer.classes
+            option = options_data[idx]
+            # correct feedback for this gap
+            correct_feedback = option["correct_feedback"][0] # always take only the first line
+            correct_node = inline_card_feedback()
+            correct_node.classes = ["correct", f"option-{idx}"]
+            correct_nodes, _ = self.state.inline_text(correct_feedback, self.lineno)
+            correct_node.extend(correct_nodes)
+            footer += correct_node
+            # incorrect feedback for this gap
+            incorrect_feedback = option["incorrect_feedback"][0] # always take only the first line
+            incorrect_node = inline_card_feedback()
+            incorrect_node.classes = ["incorrect", f"option-{idx}"]
+            incorrect_nodes, _ = self.state.inline_text(incorrect_feedback, self.lineno)
+            incorrect_node.extend(incorrect_nodes)
+            footer += incorrect_node
+            logger.info(f"Current content of footer:\n{footer.pformat()}", color="yellow")
+            # show-answer feedback for this gap
+            show_answer_feedback = option["show_answer_feedback"][0] # always take only the first line
+            show_answer_node = inline_card_feedback()
+            show_answer_node.classes = ["show-answer", f"option-{idx}"]
+            show_answer_nodes, _ = self.state.inline_text(show_answer_feedback, self.lineno)
+            show_answer_node.extend(show_answer_nodes)
+            footer += show_answer_node
+            # parsing error feedback for this gap
+            parsing_error_feedback = "Parsing error."
+            parsing_error_node = inline_card_feedback()
+            parsing_error_node.classes = ["parsing-error", f"option-{idx}"]
+            parsing_error_nodes, _ = self.state.inline_text(parsing_error_feedback, self.lineno)
+            parsing_error_node.extend(parsing_error_nodes)
+            footer += parsing_error_node
+            # Add input field to body
+            body = card.next_node(inline_card_body)
+            if body is None:
+                body = inline_card_body()
+            body.clear() # remove dummy content
+            body.classes = [f"option-{idx}"] + body.classes
+            if option["type"][0] == "T":
+                input_html = (
+                    f"<input type=\"text\" class='question-option-input type-{option['type']}' "
+                    f"id='{node_id}-option-{idx}-input' "
+                    f"placeholder='Answer...'></input>"
+                )
+            elif option["type"][0] == "M":
+                input_html = (
+                    f"<math-field class='question-option-input type-{option['type']}' "
+                    f"id='{node_id}-option-{idx}-input' "
+                    f"placeholder='\\text{{Answer...}}'>"
+                    f"</math-field>"
+                )
+            body += nodes.raw(input_html, input_html, format="html")
+        # Add post-text if present
+        self._add_text_section(node, node_id, post_text, "posttext")
+
+        # Add buttons
+        button_count = 3 if node["show_answer"] else 2
+        buttons = [
+            ("submit-button", "<i class='fa-solid fa-paper-plane'></i> Submit answer(s)"),
+        ]
+        if node["show_answer"]:
+            buttons.append(("show-button", "<i class='fa-solid fa-file-circle-check'></i> Show answer(s)"))
+        buttons.append(("reset-button", "<i class='fa-solid fa-repeat'></i> Try again"))
+
+        self._add_button_section(node, node_id, buttons, node["show_answer"], button_count)
+
+        return [node]
 
     def _handle_short_answer_blocks(self, node: Node, node_id: str, feedback: Dict, columns: str) -> List[Node]:
         """Handle short-answer block questions."""
@@ -1018,6 +1210,7 @@ def setup(app) -> Dict[str, Any]:
         "teachbooks_mcms.js",
         "teachbooks_sab.js",
         "teachbooks_nins.js",
+        "teachbooks_fix_mathfield.js",
     ]
     for js_file in js_files:
         app.add_js_file(js_file)
@@ -1040,6 +1233,10 @@ def setup(app) -> Dict[str, Any]:
         inline_card_footer,
         html=(visit_inline_card_footer_html, depart_inline_card_footer_html),
     )
+    app.add_node(
+        inline_card_feedback,
+        html=(visit_inline_card_feedback_html, depart_inline_card_feedback_html),
+    )
     
     return {
         "parallel_read_safe": True,
@@ -1057,14 +1254,21 @@ from docutils.parsers.rst import roles
 
 class inline_card(nodes.Inline, nodes.Element):
     """Container node for the inline card."""
+    classes = []
 
 
 class inline_card_body(nodes.Inline, nodes.Element):
     """Body part."""
+    classes = []
 
 
 class inline_card_footer(nodes.Inline, nodes.Element):
     """Footer part."""
+    classes = []
+
+class inline_card_feedback(nodes.Inline, nodes.Element):
+    """Feedback part."""
+    classes = []
 
 
 # ----------------------------
@@ -1156,12 +1360,13 @@ def inline_card_role(name, rawtext, text, lineno, inliner, options=None, content
     return [card], body_messages + footer_messages
 
 
+
 # ----------------------------
 # HTML translators
 # ----------------------------
 
 def visit_inline_card_html(self, node):
-    self.body.append('<span class="inline-card">')
+    self.body.append(f'<span class="inline-card {" ".join(node.classes)}">')
 
 
 def depart_inline_card_html(self, node):
@@ -1169,7 +1374,7 @@ def depart_inline_card_html(self, node):
 
 
 def visit_inline_card_body_html(self, node):
-    self.body.append('<span class="inline-card-body">')
+    self.body.append(f'<span class="inline-card-body {" ".join(node.classes)}">')
 
 
 def depart_inline_card_body_html(self, node):
@@ -1177,8 +1382,14 @@ def depart_inline_card_body_html(self, node):
 
 
 def visit_inline_card_footer_html(self, node):
-    self.body.append('<span class="inline-card-footer">')
+    self.body.append(f'<span class="inline-card-footer {" ".join(node.classes)}">')
 
 
 def depart_inline_card_footer_html(self, node):
+    self.body.append('</span>')
+
+def visit_inline_card_feedback_html(self, node):
+    self.body.append(f'<span class="inline-card-feedback {" ".join(node.classes)}">')
+
+def depart_inline_card_feedback_html(self, node):
     self.body.append('</span>')

@@ -86,7 +86,9 @@ Each of the options and placeholders will be shortly explained next:
   - For the type `multiple-choice` available variants are
     - `single-select` (_default_)
     - `multiple-select`
-  - For the type `short-answer` the variant `block` (_default_) is available.
+  - For the type `short-answer` available variants are
+    - `block` (_default_)
+    - `gaps`
   - For the type `no-input` the variant `no-submit` (_default_) is available.
 - `:columns: <columns>`: Number of columns to use for displaying the options for `multiple-choice` questions (_default_: `1 1 2 2`) or for the input blocks for the `short-answer block` questions (_default_: `1 1 1 1`). See [Grids](https://sphinx-design.readthedocs.io/en/latest/grids.html), second paragraph for more details. Either one single number or 4 numbers can be provided. If one single number is provided, it will be used for all screen sizes. If 4 numbers are provided, they will be used for the 4 screen sizes (small, medium, large and extra large) in that order.
 - `:class: <class>`: The classes to be added to the class list of the `div` element for styling purposes.
@@ -97,9 +99,9 @@ Each of the options and placeholders will be shortly explained next:
 - `<question>`: Code that defines the content of the options/input fields, including (in)correct answers and feedback. See [Syntax for multiple-choice questions](#syntax-for-multiple-choice-questions) and [Syntax for short-answer blocks questions](#syntax-for-short-answer-blocks-questions). Everything between the first `---` and the second `---` is considered part of this part of the code.
 - `<post-question>`: Optional content to be included after the options/input fields. Will be parsed, so nesting of elements is possible.
 
-### Syntax for multiple-choice questions
+### Syntax for multiple-choice single-select questions 
 
-The code inside `<question>` for `multiple-choice` questions is for both variants based on the same syntax._for options_.
+The code inside `<question>` for `multiple-choice` questions is for the variant `single-select` has the following syntax.
 
 To define a single correct option, add code of the form
 
@@ -117,13 +119,19 @@ and to define a single incorrect option, add code of the form
 & <ShowAnswerFeedback>
 ````
 
+Any number of options can be provided, but at least one correct option should be provided.
+
 The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same option.
 
 The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
 
 The placeholder `<ShowAnswerFeedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `& ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. ShowAnswerFeedback is optional, and if not provided, the feedback will be set to the value of the `<Feedback>` placeholder (or its default). This feedback will be shown when the user clicks the "Show answer" button, and it can be used to provide more detailed feedback or explanations related to the correct answer(s).
 
-After the options are defined, for the type `multiple-select`, the user can include code of the form
+### Syntax for multiple-choice multiple-select questions 
+
+The syntax for defining options for the `multiple-select` variant is similar to the `single-select` variant, but no restriction on the number of correct options applies, and the user can select multiple options as their answer. The syntax for defining correct and incorrect options is the same as for the `single-select` variant, as described in the previous section.
+
+After the options are defined, the user can include code of the form
 
 ````text
 ^^^
@@ -143,7 +151,7 @@ to provide feedback for when the user clicks the "Submit" button, based on wheth
 For these feedback options, the same rules apply for the content as for the feedback related to each option:
 - Multiple instances will be combined.
 - The content can be any code that can be parsed by Sphinx, including roles, directives and math.
-- The code can span multiple lines, as long as the first line starts with `= `, `> `, `! ` or `& ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the feedback initiated in an earlier line.
+- The code can span multiple lines, as long as the first line starts with `= `, `> `, `! ` or `& ` and is directly followed by some code. All following lines not starting with `= ` or `> ` or `! ` or `& ` are considered part of the feedback initiated in an earlier line.
 
 A short example of allowed code:
 
@@ -215,6 +223,47 @@ A line starting with `> ` is considered the start of the feedback if an incorrec
 A line starting with `& ` is considered the start of the feedback shown if the "Show answer" button is clicked. `<ShowAnswerFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `& ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same feedback. If not provided, the value of `<CorrectFeedback>` will be substituted.
 
 If between two lines starting with `<Mode>[Answer] ` multiple instances of correct feedback (`= `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of incorrect feedback (`> `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of show answer feedback (`& `) are found, these will be concatenated.
+
+### Syntax for short-answer gaps questions
+
+The code inside `<question>` for `short-answer` questions for the variant `gaps` has the following syntax.
+
+To add an input field, add code of the form
+
+````text
+<Mode>[<Answer>]
+= <CorrectFeedback>
+> <IncorrectFeedback>
+& <ShowAnswerFeedback>
+````
+
+The placeholders have the same meaning and rules as for the `blocks` variant, but in this case no label can be provided for the input field.
+
+The feedback options for the `gaps` variant are more limited than the `blocks` variant, as the feedback will be rendered as inline elements. This means only simple MarkDown text (styling) and math can be included. Roles and directives are not allowed in the feedback for the `gaps` variant, and if included, they can lead to rendering issues. For the same reason, code spanning multiple lines is not allowed for the feedback options for the `gaps` variant. This means only the first line of the feedback will be used, and any following lines will be ignored.
+
+After the input fields are defined, the user __must__ include code of the form
+
+````text
+^^^
+! <QuestionStructure>
+= <CorrectFeedback>
+> <IncorrectFeedback>
+& <ShowAnswerFeedback>
+````
+
+The placeholder `<QuestionStructure>` should include the text of the question, with gaps for the input fields. The gaps should be indicated by `{gap}`. The number of gaps should correspond to the number of input fields defined in the previous part of the code, and they will be replaced by the input fields in the rendered question in the same order.
+
+The placeholder `<CorrectFeedback>` should include the feedback to be displayed when the user provided all correct answers. Default is `You filled in all gaps correctly.`.
+
+The placeholder `<IncorrectFeedback>` should include the feedback to be displayed when the user provided some incorrect answers. Default is `You filled in some gaps correctly, but also some incorrectly.`.
+
+The placeholder `<ShowAnswerFeedback>` should include the feedback to be displayed when the user clicks the "Show answer" button. Default is `The correct answers are shown above.`
+
+Each of these feedback options is optional, and if not provided, the default feedback will be used.
+
+The placeholders `<QuestionStructure>`, `<CorrectFeedback>`, `<IncorrectFeedback>`, and `<ShowAnswerFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the placeholder starts with `! `, `= `, `> ` or `& ` and is directly followed by some code. All following lines not starting with `! ` or `= ` or `> ` or `& ` are considered part of the same placeholder.
+
+Multiple instances of the same placeholder will be concatenated, so multiple lines starting with `! ` will be combined to form the complete question structure, multiple lines starting with `= ` will be combined to form the complete correct feedback, multiple lines starting with `> ` will be combined to form the complete incorrect feedback, and multiple lines starting with `& ` will be combined to form the complete show answer feedback.
 
 ### Syntax for no-input no-submit questions
 

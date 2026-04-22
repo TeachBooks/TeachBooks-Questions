@@ -354,3 +354,87 @@ div.no-input section.question-options:has(div.sd-card.incorrect),
 div.no-input section.question-options:has(div.sd-card.neutral) {
     display: block;
 }
+
+div.short-answer.gaps div.sd-card-body.question span.inline-card {
+    width: 200px;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body {
+    padding: 0;
+    height:42px;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer:not(.correct):not(.incorrect):not(.parsing-error):not(.show-answer) {
+    display: none;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.question-option-input {
+    box-sizing: border-box;   /* include padding/border in width/height */
+    width: 100%;
+    border: none;             /* optional: match card’s border instead */
+    font: inherit;
+    background-color: var(--question-white);
+    height: 100%;
+}
+
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.question-option-input:focus {
+    outline: none;
+    background-color: var(--question-blue);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card:has(input:focus) {
+    border-color: var(--question-blue);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.question-option-input::placeholder {
+    color: var(--sd-color-card-text);
+    opacity: 0.5; /* ensure placeholder is visible */
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input {
+    display: inline-block;
+    box-sizing: border-box;   /* include padding/border in width/height */
+    width: 100%;              /* host takes card width */
+    height: 100%;             /* match container if container has a height */
+    border: none;             /* optional: match card's border instead */
+    background-color: var(--question-white);
+    font: inherit;
+}
+/* math-field icon colors (shadow DOM) */
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input::part(virtual-keyboard-toggle),
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input::part(menu-toggle) {
+    color: var(--sd-color-card-text);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input:focus {
+    outline: none;
+    background-color: var(--question-blue);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card:has(math-field.question-option-input:focus) {
+    border-color: var(--question-blue);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input::part(placeholder) {
+    color: var(--sd-color-card-text);
+    opacity: 0.5; /* ensure placeholder is visible */
+}
+
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer span.inline-card-feedback {
+    display: none;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.correct span.inline-card-feedback.correct {
+    display: unset;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.correct {
+    background-color: var(--question-green);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.incorrect span.inline-card-feedback.incorrect {
+    display: unset;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.incorrect {
+    background-color: var(--question-red);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.show-answer span.inline-card-feedback.show-answer {
+    display: unset;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.show-answer {
+    background-color: var(--question-green);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.parsing-error span.inline-card-feedback.parsing-error {
+    display: unset;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.parsing-error {
+    background-color: var(--question-blue);
+}
