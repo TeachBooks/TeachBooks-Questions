@@ -516,6 +516,7 @@ class QuestionDirective(SphinxDirective):
                     f"</math-field>"
                 )
             elif option["type"][0:2] == "DS":
+                replace_answer = []
                 input_html = (
                     f"<select class='question-option-input type-{option['type']} default-selected' "
                     f"id='{node_id}-option-{idx}-input'>"
@@ -526,11 +527,13 @@ class QuestionDirective(SphinxDirective):
                     if ans.strip().startswith("{") and ans.strip().endswith("}"):
                         ans = ans.strip()[1:-1]
                         correct = True
+                        replace_answer.append(ans)
                     else:
                         correct = False
                     ans_clean = ans.strip().replace('\\;', ';').replace('\\{', '{').replace('\\}', '}')
-                    input_html += f"<option class='{"correct" if correct else "incorrect"}'>{ans_clean}</option>"
+                    input_html += f"<option>{ans_clean}</option>"
                 input_html += "</select>"
+                option["answer"] = " ; ".join(replace_answer)
             body += nodes.raw(input_html, input_html, format="html")
             # now take the footer of the card and populate it with the corresponding feedback
             footer = card.next_node(inline_card_footer)

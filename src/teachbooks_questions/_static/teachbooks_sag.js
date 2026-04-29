@@ -66,7 +66,7 @@
     return document.querySelector(`section.question-text#${questionDiv.id}-question`);
   }
 
-  function setReadOnlyState(inputField, mathField, readOnly) {
+  function setReadOnlyState(inputField, mathField, selectField, readOnly) {
     if (inputField) {
       inputField.readOnly = readOnly;
     }
@@ -77,6 +77,9 @@
       } else {
         mathField.removeAttribute('read-only');
       }
+    }
+    if (selectField) {
+      selectField.disabled = readOnly;
     }
   }
 
@@ -95,9 +98,10 @@
       const footer = fieldCard.querySelector('span.inline-card-footer');
       const inputField = fieldCard.querySelector('input.question-option-input');
       const mathField = fieldCard.querySelector('math-field.question-option-input');
+      const selectField = fieldCard.querySelector('select.question-option-input');
       const answerSpan = fieldCard.querySelector('span.inline-card-feedback.answer');
 
-      if (!footer || (!inputField && !mathField)) {
+      if (!footer || (!inputField && !mathField && !selectField)) {
         return;
       }
 
@@ -110,7 +114,10 @@
       if (mathField) {
         mathField.classList.add('show-answer');
       }
-      setReadOnlyState(inputField, mathField, true);
+      if (selectField) {
+        selectField.classList.add('show-answer');
+      }
+      setReadOnlyState(inputField, mathField, selectField, true);
 
       if (answerSpan) {
         if (inputField) {
@@ -133,6 +140,18 @@
             mathField.value = centre;
           }
         }
+        if (selectField) {
+          // show the first answer if there are multiple, as the select field is not designed to show multiple answers
+          const correctAnswer = answerSpan.textContent.trim().split(/(?<!\\);/)[0].trim();
+          selectField.querySelectorAll('option').forEach(function (option) {
+            if (option.textContent.trim() === correctAnswer) {
+              option.selected = true;
+            } else {
+              option.selected = false;
+            }
+          });
+          updateSelectState(selectField);
+        }
       }
     });
   }
@@ -145,6 +164,7 @@
     questionDiv.querySelectorAll('span.inline-card.field').forEach(function (optionCard) {
       const inputField = optionCard.querySelector('input.question-option-input');
       const mathField = optionCard.querySelector('math-field.question-option-input');
+      const selectField = optionCard.querySelector('select.question-option-input');
 
       if (inputField && inputField.classList.contains('show-answer')) {
         if (clearValues || clearAllInputs) {
@@ -164,7 +184,26 @@
         mathField.value = '';
       }
 
-      setReadOnlyState(inputField, mathField, false);
+      if (selectField && selectField.classList.contains('show-answer')) {
+        if (clearValues || clearAllInputs) {
+          selectField.querySelectorAll('option').forEach(function (option) {
+            option.selected = false;
+          });
+          selectField.selectedIndex = 0;         
+        }
+        selectField.classList.remove('show-answer');
+      }
+        else if (selectField && clearAllInputs) {
+          selectField.querySelectorAll('option').forEach(function (option) {
+            option.selected = false;
+          });
+          selectField.selectedIndex = 0;
+        }
+      if (selectField) {
+        updateSelectState(selectField);
+      }
+      
+      setReadOnlyState(inputField, mathField, selectField, false);
     });
   }
 
@@ -206,10 +245,11 @@
       const footer = fieldCard.querySelector('span.inline-card-footer');
       const inputField = fieldCard.querySelector('input.question-option-input');
       const mathField = fieldCard.querySelector('math-field.question-option-input');
+      const selectField = fieldCard.querySelector('select.question-option-input');
       const answerSpan = fieldCard.querySelector('span.inline-card-feedback.answer');
 
       
-      if (!footer || (!inputField && !mathField)) {
+      if (!footer || (!inputField && !mathField && !selectField)) {
         return;
       }
 
@@ -226,9 +266,17 @@
         }
       }
 
-      const answerType = getAnswerType(inputField || mathField);
+      const answerType = getAnswerType(inputField || mathField || selectField);
       const correctAnswer = answerSpan ? answerSpan.textContent.trim() : null;
-      const isCorrect = checkAnswer(inputField ? inputField.value : mathField.value, correctAnswer, answerType);
+      let toCheck = '';
+      if (inputField) {
+        toCheck = inputField.value;
+      } else if (mathField) {
+        toCheck = mathField.value;
+      } else if (selectField && answerType === 'DS') {
+        toCheck = selectField.selectedOptions[0] ? selectField.selectedOptions[0].textContent : '';
+      }
+      const isCorrect = checkAnswer(toCheck, correctAnswer, answerType);
 
       footer.classList.add(isCorrect ? 'correct' : 'incorrect');
     });
@@ -243,6 +291,7 @@
     if (inputOrMathField.classList.contains('type-MNR')) return 'MNR';
     if (inputOrMathField.classList.contains('type-MAP')) return 'MAP';
     if (inputOrMathField.classList.contains('type-MRP')) return 'MRP';
+    if (inputOrMathField.classList.contains('type-DS')) return 'DS';
     return null;
   }
 
@@ -258,6 +307,11 @@
     }
 
     switch (answerType) {
+      case 'DS':
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersDS = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+        // check if the stripped student answer matches any of the correct answers exactly
+         return correctAnswersDS.includes(stripped)
       case 'T':
         // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
         const correctAnswersT = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));

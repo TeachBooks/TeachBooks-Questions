@@ -468,6 +468,7 @@ div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.que
     font: inherit;
     background-color: var(--question-white);
     height: 100%;
+    color: var(--sd-color-card-text);
 }
 
 div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input:focus {
