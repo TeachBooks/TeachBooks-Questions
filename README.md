@@ -245,9 +245,10 @@ After the input fields are defined, the user __must__ include code of the form
 
 ````text
 ^^^
-! <QuestionStructure>
+? <QuestionStructure>
 = <CorrectFeedback>
 > <IncorrectFeedback>
+! <MixedFeedback>
 & <ShowAnswerFeedback>
 ````
 
@@ -255,13 +256,15 @@ The placeholder `<QuestionStructure>` should include the text of the question, w
 
 The placeholder `<CorrectFeedback>` should include the feedback to be displayed when the user provided all correct answers. Default is `You filled in all gaps correctly.`.
 
-The placeholder `<IncorrectFeedback>` should include the feedback to be displayed when the user provided some incorrect answers. Default is `You filled in some gaps correctly, but also some incorrectly.`.
+The placeholder `<IncorrectFeedback>` should include the feedback to be displayed when the user provided only incorrect answers. Default is `You filled in none of the gaps correctly.`.
+
+The placeholder `<MixedFeedback>` should include the feedback to be displayed when the user provided some incorrect and some correct answers. Default is `You filled in some gaps correctly, but also some incorrectly.`.
 
 The placeholder `<ShowAnswerFeedback>` should include the feedback to be displayed when the user clicks the "Show answer" button. Default is `The correct answers are shown above.`
 
 Each of these feedback options is optional, and if not provided, the default feedback will be used.
 
-The placeholders `<QuestionStructure>`, `<CorrectFeedback>`, `<IncorrectFeedback>`, and `<ShowAnswerFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the placeholder starts with `! `, `= `, `> ` or `& ` and is directly followed by some code. All following lines not starting with `! ` or `= ` or `> ` or `& ` are considered part of the same placeholder.
+The placeholders `<QuestionStructure>`, `<CorrectFeedback>`, `<IncorrectFeedback>`, and `<ShowAnswerFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the placeholder starts with `? `, `= `, `> `, `! ` or `& ` and is directly followed by some code. All following lines not starting with `? ` or `= ` or `> ` or `! ` or `& ` are considered part of the same placeholder.
 
 Multiple instances of the same placeholder will be concatenated, so multiple lines starting with `! ` will be combined to form the complete question structure, multiple lines starting with `= ` will be combined to form the complete correct feedback, multiple lines starting with `> ` will be combined to form the complete incorrect feedback, and multiple lines starting with `& ` will be combined to form the complete show answer feedback.
 

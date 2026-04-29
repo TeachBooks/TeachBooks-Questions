@@ -32,7 +32,8 @@ class QuestionDirective(SphinxDirective):
             "blocks": {True: ["Correct!"], False: ["Incorrect."]},
             "gaps": {True: ["Correct!"], False: ["Incorrect."],
                      "correct": ["You filled in all gaps correctly."],
-                     "incorrect": ["You filled in some gaps correctly, but also some incorrectly."],
+                     "incorrect": ["You filled in none of the gaps correctly."],
+                     "mixed": ["You filled in some gaps correctly, but also some incorrectly."],
                      "show-answer": ["The correct answers are shown above."] }
         },
         "no-input": {"no-submit": {}}
@@ -51,6 +52,7 @@ class QuestionDirective(SphinxDirective):
     FEEDBACK_CORRECT_PREFIX = "= "
     FEEDBACK_NEUTRAL_PREFIX = "! "
     FEEDBACK_SHOW_ANSWER_PREFIX = "& "
+    QUESTION_STRUCTURE_PREFIX = "? "
     SEPARATOR = "---"
     GENERAL_FEEDBACK_SEPARATOR = "^^^"
     
@@ -86,9 +88,7 @@ class QuestionDirective(SphinxDirective):
                 f"{self.lineno} in {self.env.docname}. Supported variants are: "
                 f"{self.VARIANTS[question_type]}"
             )
-        
-        logger.info(f"Processing question of type '{question_type}' and variant '{variant}' at line {self.lineno} in {self.env.docname}",color="fuchsia")
-        
+                
         columns = self.options.get("columns", self.COLUMNS[question_type][variant])
         feedback = self.options.get("feedback", self.FEEDBACKS[question_type][variant])
 
@@ -391,11 +391,14 @@ class QuestionDirective(SphinxDirective):
                     if line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX)
                     or line.strip().startswith(self.FEEDBACK_WRONG_PREFIX)
                     or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX)
-                    or line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX)]
+                    or line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX)
+                    or line.strip().startswith(self.QUESTION_STRUCTURE_PREFIX)
+                    ]
         question_raw = []
         correct_raw = []
         incorrect_raw = []
         show_answer_raw = []
+        mixed_raw = []
         # loop over starting positions and assign feedback to the appropriate section based on the prefix
         for idx, start in enumerate(starts):
             end = starts[idx + 1] if idx + 1 < len(starts) else len(general_raw)
@@ -408,13 +411,16 @@ class QuestionDirective(SphinxDirective):
             elif prefix == self.FEEDBACK_WRONG_PREFIX:
                 incorrect_raw.extend(content)
             elif prefix == self.FEEDBACK_NEUTRAL_PREFIX:
-                question_raw.extend(content)
+                mixed_raw.extend(content)
             elif prefix == self.FEEDBACK_SHOW_ANSWER_PREFIX:
                 show_answer_raw.extend(content)
+            elif prefix == self.QUESTION_STRUCTURE_PREFIX:
+                question_raw.extend(content)
         # fill empty sections with default feedback if not provided
         general['correct'] = correct_raw if correct_raw else feedback['correct']
         general['incorrect'] = incorrect_raw if incorrect_raw else feedback['incorrect']
-        general['question'] = question_raw
+        general['mixed'] = mixed_raw if mixed_raw else feedback['mixed']
+        general['question'] = question_raw # no default for question, as it is required to provide a question structure in gaps
         general['show-answer'] = show_answer_raw if show_answer_raw else feedback['show-answer']
 
         return general
@@ -443,7 +449,7 @@ class QuestionDirective(SphinxDirective):
                 f"Question variant short-answer of type gaps at line "
                 f"{self.lineno} in {self.env.docname} is malformed. "
                 f"Please provide a question by including at least one line "
-                f"starting with '{self.FEEDBACK_NEUTRAL_PREFIX}' "
+                f"starting with '{self.QUESTION_STRUCTURE_PREFIX}' "
                 f"in the section starting with '{self.GENERAL_FEEDBACK_SEPARATOR}'."
             )
         # count the number of gaps and match with the number of options
@@ -486,53 +492,16 @@ class QuestionDirective(SphinxDirective):
                 )
                 break
         # Find all inline cards and populate them with the corresponding options
-        logger.info(f"Container:\n{container.pformat()}", color="blue")
         list_of_cards = container.findall(inline_card)
         for idx, card in enumerate(list_of_cards):
-            logger.info(f"Inline card found:\n{card.pformat()}", color="green")
-            card.classes = [f"option-{idx}"] + card.classes
-            # now take the footer of the card and populate it with the corresponding feedback
-            footer = card.next_node(inline_card_footer)
-            if footer is None:
-                footer = inline_card_footer()
-            footer.clear() # remove dummy content
-            footer.classes = [f"option-{idx}"] + footer.classes
+            card.classes = [f"field-{idx} field"] + card.classes
             option = options_data[idx]
-            # correct feedback for this gap
-            correct_feedback = option["correct_feedback"][0] # always take only the first line
-            correct_node = inline_card_feedback()
-            correct_node.classes = ["correct", f"option-{idx}"]
-            correct_nodes, _ = self.state.inline_text(correct_feedback, self.lineno)
-            correct_node.extend(correct_nodes)
-            footer += correct_node
-            # incorrect feedback for this gap
-            incorrect_feedback = option["incorrect_feedback"][0] # always take only the first line
-            incorrect_node = inline_card_feedback()
-            incorrect_node.classes = ["incorrect", f"option-{idx}"]
-            incorrect_nodes, _ = self.state.inline_text(incorrect_feedback, self.lineno)
-            incorrect_node.extend(incorrect_nodes)
-            footer += incorrect_node
-            logger.info(f"Current content of footer:\n{footer.pformat()}", color="yellow")
-            # show-answer feedback for this gap
-            show_answer_feedback = option["show_answer_feedback"][0] # always take only the first line
-            show_answer_node = inline_card_feedback()
-            show_answer_node.classes = ["show-answer", f"option-{idx}"]
-            show_answer_nodes, _ = self.state.inline_text(show_answer_feedback, self.lineno)
-            show_answer_node.extend(show_answer_nodes)
-            footer += show_answer_node
-            # parsing error feedback for this gap
-            parsing_error_feedback = "Parsing error."
-            parsing_error_node = inline_card_feedback()
-            parsing_error_node.classes = ["parsing-error", f"option-{idx}"]
-            parsing_error_nodes, _ = self.state.inline_text(parsing_error_feedback, self.lineno)
-            parsing_error_node.extend(parsing_error_nodes)
-            footer += parsing_error_node
             # Add input field to body
             body = card.next_node(inline_card_body)
             if body is None:
                 body = inline_card_body()
             body.clear() # remove dummy content
-            body.classes = [f"option-{idx}"] + body.classes
+            body.classes = [f"field-{idx} field"] + body.classes
             if option["type"][0] == "T":
                 input_html = (
                     f"<input type=\"text\" class='question-option-input type-{option['type']}' "
@@ -547,8 +516,114 @@ class QuestionDirective(SphinxDirective):
                     f"</math-field>"
                 )
             body += nodes.raw(input_html, input_html, format="html")
+            # now take the footer of the card and populate it with the corresponding feedback
+            footer = card.next_node(inline_card_footer)
+            if footer is None:
+                footer = inline_card_footer()
+            footer.clear() # remove dummy content
+            footer.classes = [f"field-{idx} field"] + footer.classes
+            # correct feedback for this field
+            correct_feedback = option["correct_feedback"][0] # always take only the first line
+            correct_node = inline_card_feedback()
+            correct_node.classes = ["correct", f"field-{idx} field"]
+            correct_nodes, _ = self.state.inline_text(correct_feedback, self.lineno)
+            correct_node.extend(correct_nodes)
+            footer += correct_node
+            # incorrect feedback for this field
+            incorrect_feedback = option["incorrect_feedback"][0] # always take only the first line
+            incorrect_node = inline_card_feedback()
+            incorrect_node.classes = ["incorrect", f"field-{idx} field"]
+            incorrect_nodes, _ = self.state.inline_text(incorrect_feedback, self.lineno)
+            incorrect_node.extend(incorrect_nodes)
+            footer += incorrect_node
+            # show-answer feedback for this field
+            show_answer_feedback = option["show_answer_feedback"][0] # always take only the first line
+            show_answer_node = inline_card_feedback()
+            show_answer_node.classes = ["show-answer", f"field-{idx} field"]
+            show_answer_nodes, _ = self.state.inline_text(show_answer_feedback, self.lineno)
+            show_answer_node.extend(show_answer_nodes)
+            footer += show_answer_node
+            # parsing error feedback for this field
+            parsing_error_feedback = "Parsing error."
+            parsing_error_node = inline_card_feedback()
+            parsing_error_node.classes = ["parsing-error", f"field-{idx} field"]
+            parsing_error_nodes, _ = self.state.inline_text(parsing_error_feedback, self.lineno)
+            parsing_error_node.extend(parsing_error_nodes)
+            footer += parsing_error_node
+            # # add correct answer to the footer for show answer functionality
+            answer = option["answer"]
+            answer_node = inline_card_feedback()
+            answer_node.classes = ["answer", f"field-{idx} field"]
+            answer_nodes, _ = self.state.inline_text("_placeholder_", self.lineno)
+            answer_nodes[0] = nodes.Text(answer) # replace the placeholder text with the actual answer
+            answer_node.extend(answer_nodes)
+            logger.info(f"Option answer nodes:\n{answer_node.pformat()}",color="fuchsia")
+            footer += answer_node
+
         # Add post-text if present
         self._add_text_section(node, node_id, post_text, "posttext")
+
+        # Add overall feedback section
+        feedback_section = nodes.section(
+            classes=["question-feedback", "overall-feedback"],
+            ids=[f"{node_id}-overall-feedback"]
+        )
+        feedback_grid = [
+            "::::{grid} 1",
+            ":gutter: 3",
+            "",
+            ":::{grid-item-card}",
+            ":shadow: lg",
+            ":class-card: correct",
+            ":class-body: correct",
+            "",
+            ":::",
+            ":::{grid-item-card}",
+            ":shadow: lg",
+            ":class-card: incorrect",
+            ":class-body: incorrect",
+            "",
+            ":::",
+            ":::{grid-item-card}",
+            ":shadow: lg",
+            ":class-card: mixed",
+            ":class-body: mixed",
+            "",
+            ":::",
+            ":::{grid-item-card}",
+            ":shadow: lg",
+            ":class-card: show-answer",
+            ":class-body: show-answer",
+            "",
+            ":::",
+            "::::",
+        ]
+        self.state.nested_parse(feedback_grid, self.content_offset, feedback_section)
+        # loop over the 4 feedback cards and populate them with the appropriate general feedback
+        card = 0
+        for container in feedback_section.findall(nodes.container):
+            card_classes = container.get("classes", [])
+            if "sd-card-body" in card_classes:
+                card += 1
+            else:
+                continue
+            if "correct" in card_classes:
+                feedback_content = general['correct']
+            elif "incorrect" in card_classes:
+                feedback_content = general['incorrect']
+            elif "mixed" in card_classes:
+                feedback_content = general['mixed']
+            elif "show-answer" in card_classes:
+                feedback_content = general['show-answer']
+            else:
+                continue
+            fb_sub_section = nodes.section(
+                classes=["question-feedback", f"overall-feedback-{card}"],
+                ids=[f"{node_id}-overall-feedback-{card}"]
+            )
+            self.state.nested_parse(feedback_content, self.content_offset, fb_sub_section)
+            container += fb_sub_section
+        node += feedback_section
 
         # Add buttons
         button_count = 3 if node["show_answer"] else 2
@@ -1209,6 +1284,7 @@ def setup(app) -> Dict[str, Any]:
         "teachbooks_mcss.js",
         "teachbooks_mcms.js",
         "teachbooks_sab.js",
+        "teachbooks_sag.js",
         "teachbooks_nins.js",
         "teachbooks_fix_mathfield.js",
     ]

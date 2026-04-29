@@ -438,3 +438,24 @@ div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.parsing-
 div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.parsing-error {
     background-color: var(--question-blue);
 }
+
+/* styling of the feedback in the general section of a mcms question */
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card div.sd-card-body {
+    background-color: transparent;
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card.correct,
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card.show-answer {
+    background-color: var(--question-green);
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card:not(.correct, .show-answer) {
+    background-color: var(--question-red);
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d-flex-row:has(div.sd-card.show) {
+    display: flex !important;
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d-flex-row:has(div.sd-card:not(.show)) {
+    display: none !important;
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body span.question-option-answer {
+    display: none;
+}
