@@ -459,3 +459,25 @@ div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d
 div.short-answer.gaps div.sd-card-body.question span.inline-card-body span.question-option-answer {
     display: none;
 }
+
+/* Select stuff */
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input {
+    box-sizing: border-box;   /* include padding/border in width/height */
+    width: 100%;
+    border: none;             /* optional: match card’s border instead */
+    font: inherit;
+    background-color: var(--question-white);
+    height: 100%;
+}
+
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input:focus {
+    outline: none;
+    background-color: var(--question-blue);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card:has(select:focus) {
+    border-color: var(--question-blue);
+}
+div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input.default-selected {
+    color: var(--sd-color-card-text);
+    opacity: 0.5; /* ensure placeholder is visible */
+}

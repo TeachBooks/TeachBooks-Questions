@@ -7,8 +7,8 @@ from sphinx.util.docutils import SphinxDirective
 from docutils.nodes import Node
 from docutils.parsers.rst import directives
 
-from sphinx.util import logging
-logger = logging.getLogger(__name__)
+# from sphinx.util import logging
+# logger = logging.getLogger(__name__)
 
 
 class QuestionDirective(SphinxDirective):
@@ -515,6 +515,22 @@ class QuestionDirective(SphinxDirective):
                     f"placeholder='\\text{{Answer...}}'>"
                     f"</math-field>"
                 )
+            elif option["type"][0:2] == "DS":
+                input_html = (
+                    f"<select class='question-option-input type-{option['type']} default-selected' "
+                    f"id='{node_id}-option-{idx}-input'>"
+                    f"<option class='default' id='{node_id}-option-{idx}-default' disabled selected hidden>Answer...</option>"
+                )
+                for ans in re.split(r'(?<!\\);', option["answer"]):
+                    # check if answer is contained in { and }, and if so, only take the content within the brackets as the answer text, to allow for semicolons in the answer text by escaping them with a backslash
+                    if ans.strip().startswith("{") and ans.strip().endswith("}"):
+                        ans = ans.strip()[1:-1]
+                        correct = True
+                    else:
+                        correct = False
+                    ans_clean = ans.strip().replace('\\;', ';').replace('\\{', '{').replace('\\}', '}')
+                    input_html += f"<option class='{"correct" if correct else "incorrect"}'>{ans_clean}</option>"
+                input_html += "</select>"
             body += nodes.raw(input_html, input_html, format="html")
             # now take the footer of the card and populate it with the corresponding feedback
             footer = card.next_node(inline_card_footer)
@@ -557,7 +573,6 @@ class QuestionDirective(SphinxDirective):
             answer_nodes, _ = self.state.inline_text("_placeholder_", self.lineno)
             answer_nodes[0] = nodes.Text(answer) # replace the placeholder text with the actual answer
             answer_node.extend(answer_nodes)
-            logger.info(f"Option answer nodes:\n{answer_node.pformat()}",color="fuchsia")
             footer += answer_node
 
         # Add post-text if present

@@ -1,6 +1,15 @@
 // Functionality for short-answer gaps questions in Teachbooks
 
 (function () {
+    
+    document.addEventListener("change", (event) => {
+    const select = event.target.closest("select");
+    if (!select) return;
+
+    updateSelectState(select);
+    });
+
+
     document.addEventListener('click', function (event) {
         const resetButton = event.target.closest('div.sd-card.reset-button');
         if (resetButton) {
@@ -34,6 +43,20 @@
   } else {
     configureAllMathFields();
   }
+  
+  
+    function updateSelectState(select) {
+        const option = select.selectedOptions[0];
+
+        if (!option) return;
+
+        select.classList.toggle(
+            "default-selected",
+            option.classList.contains("default")
+        );
+    }
+
+
 
   function getQuestionDiv(element) {
     return element.closest('div.short-answer.gaps');
