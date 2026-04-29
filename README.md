@@ -241,9 +241,9 @@ The placeholders have the same meaning and rules as for the `blocks` variant, bu
 
 The feedback options for the `gaps` variant are more limited than the `blocks` variant, as the feedback will be rendered as inline elements. This means only simple MarkDown text (styling) and math can be included. Roles and directives are not allowed in the feedback for the `gaps` variant, and if included, they can lead to rendering issues. For the same reason, code spanning multiple lines is not allowed for the feedback options for the `gaps` variant. This means only the first line of the feedback will be used, and any following lines will be ignored.
 
-Additionally, for the `gaps` variant, the following `<Mode>`s are available:
+Additionally, for the `gaps` variant, the following `<Mode>` is available:
 
-- `DS[List]` for a single-select drop-down question. `List` must be a string. The string is split at every occurrence of `;`, and every string one of the resulting strings will be included as an option in the drop-down menu,in the order provided. No default selection will be made, so the user has to actively select an option for it to be considered as an answer. Correct options must be enclosed in curly braces `{}`. For example, `D[{Option 1};Option 2;{Option 3}]` will create a drop-down menu with three options, where `Option 1` and `Option 3` are correct, and `Option 2` is incorrect. If the symbols `{`, `}` and/or `;` should be included in an option explicitly, they must be escaped as `\{`, `\}` and `\;`.
+- `DS[List]` for a single-select drop-down question. `List` must be a string. The string is split at every occurrence of `;`, and every string one of the resulting strings will be included as an option in the drop-down menu,in the order provided. No default selection will be made, so the user has to actively select an option for it to be considered as an answer. Correct options must be enclosed in curly braces `{}`. For example, `DS[{Option 1};Option 2;{Option 3}]` will create a drop-down menu with three options, where `Option 1` and `Option 3` are correct, and `Option 2` is incorrect. If the symbols `{`, `}` and/or `;` should be included in an option explicitly, they must be escaped as `\{`, `\}` and `\;`.
 
 After the input fields are defined, the user __must__ include code of the form
 
