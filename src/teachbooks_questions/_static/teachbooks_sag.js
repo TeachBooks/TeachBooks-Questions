@@ -20,6 +20,21 @@
         }
     });
 
+  document.addEventListener('focus', function (event) {
+    if (event.target.tagName === 'INPUT') {
+      handleFocus(event.target);
+    }
+    if (event.target.tagName === 'MATH-FIELD') {
+      handleFocus(event.target);
+    }
+  }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', configureAllMathFields, { once: true });
+  } else {
+    configureAllMathFields();
+  }
+
   function getQuestionDiv(element) {
     return element.closest('div.short-answer.gaps');
   }
@@ -196,15 +211,15 @@
     });
   }
 
-  function getAnswerType(textArea) {
-    if (textArea.classList.contains('type-T')) return 'T';
-    if (textArea.classList.contains('type-TI')) return 'TI';
-    if (textArea.classList.contains('type-TF')) return 'TF';
-    if (textArea.classList.contains('type-M')) return 'M';
-    if (textArea.classList.contains('type-MR')) return 'MR';
-    if (textArea.classList.contains('type-MNR')) return 'MNR';
-    if (textArea.classList.contains('type-MAP')) return 'MAP';
-    if (textArea.classList.contains('type-MRP')) return 'MRP';
+  function getAnswerType(inputOrMathField) {
+    if (inputOrMathField.classList.contains('type-T')) return 'T';
+    if (inputOrMathField.classList.contains('type-TI')) return 'TI';
+    if (inputOrMathField.classList.contains('type-TF')) return 'TF';
+    if (inputOrMathField.classList.contains('type-M')) return 'M';
+    if (inputOrMathField.classList.contains('type-MR')) return 'MR';
+    if (inputOrMathField.classList.contains('type-MNR')) return 'MNR';
+    if (inputOrMathField.classList.contains('type-MAP')) return 'MAP';
+    if (inputOrMathField.classList.contains('type-MRP')) return 'MRP';
     return null;
   }
 
@@ -322,6 +337,170 @@
         console.error('Answer checking for type '+answerType+' is not implemented yet');
         return false;
     }
+  }
+
+  function handleFocus(element) {
+    // In show-answer mode, focusing should not reset content;
+    // users should leave this mode via Try again (or Submit).
+    if (element.classList && element.classList.contains('show-answer')) {
+      return;
+    }
+    if (element.tagName === 'INPUT' && element.readOnly) {
+      return;
+    }
+    if (element.tagName === 'MATH-FIELD' && (element.readOnly || element.hasAttribute('read-only'))) {
+      return;
+    }
+
+    // get the parent question div
+    const questionDiv = getQuestionDiv(element);
+    if (!questionDiv) {
+      return;
+    }
+    // Remove all shown answers when resuming input mode
+    clearShowAnswerMode(questionDiv, true, false);
+    // Remove all feedback
+    questionDiv.querySelectorAll('span.inline-card-footer').forEach(function (footer) {
+      footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
+    });
+  }
+
+  const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
+
+  function configureMathFieldHorizontalScroll(mathField) {
+    if (!mathField) {
+      return;
+    }
+
+    const apply = () => {
+      const shadow = mathField.shadowRoot;
+      if (!shadow) {
+        return false;
+      }
+
+      // Add internal styles once: MathLive renders in shadow DOM, so host CSS is not enough.
+      let styleTag = shadow.querySelector(`style[${MATH_SCROLL_STYLE_ID}]`);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.setAttribute(MATH_SCROLL_STYLE_ID, '1');
+        styleTag.textContent = `
+          .ML__container,
+          [part="container"] {
+            display: flex !important;
+            align-items: center;
+            overflow-x: hidden !important;
+            overflow-y: hidden !important;
+          }
+
+          .ML__content,
+          [part="content"] {
+            flex: 1 1 auto;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            white-space: nowrap !important;
+            width: auto !important;
+            min-width: 0 !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
+          }
+
+          .ML__toggles,
+          .ML__virtual-keyboard-toggle,
+          .ML__menu-toggle {
+            flex: 0 0 auto !important;
+          }
+
+          .ML__toggles {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: fit-content !important;
+            max-width: fit-content !important;
+            min-width: 0 !important;
+            gap: 0.1rem !important;
+            column-gap: 0.1rem !important;
+            row-gap: 0 !important;
+            white-space: nowrap;
+            grid-template-columns: none !important;
+            margin: 0 !important;
+            margin-left: 0.5rem !important;
+            padding: 0 !important;
+          }
+
+          .ML__toggles--vertical {
+            display: flex !important;
+            flex-direction: row !important;
+            grid-template-columns: none !important;
+            row-gap: 0 !important;
+            column-gap: 0.5rem !important;
+            width: fit-content !important;
+            max-width: fit-content !important;
+          }
+
+          .ML__toggles > * {
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            min-width: 0 !important;
+          }
+
+          .ML__virtual-keyboard-toggle,
+          .ML__menu-toggle {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            margin: 0 !important;
+            margin-inline: 0 !important;
+            margin-inline-start: 0 !important;
+            margin-inline-end: 0 !important;
+            padding-left: 0.1rem;
+            padding-right: 0.1rem;
+            min-width: 0 !important;
+            width: auto !important;
+          }
+
+          /* Keep scrolling possible on touch even when unfocused */
+          :host(:not(:focus)) .ML__container,
+          :host(:not(:focus-within)) .ML__container {
+            pointer-events: auto !important;
+          }
+
+          /* Scrollbar styling for the input area */
+          .ML__content::-webkit-scrollbar,
+          [part="content"]::-webkit-scrollbar {
+            height: 12px;
+          }
+          .ML__content::-webkit-scrollbar-thumb,
+          [part="content"]::-webkit-scrollbar-thumb {
+            background: rgba(120, 120, 120, 0.75);
+            border-radius: 8px;
+          }
+          .ML__content::-webkit-scrollbar-track,
+          [part="content"]::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.08);
+          }
+        `;
+        shadow.appendChild(styleTag);
+      }
+
+      const content = shadow.querySelector('.ML__content, [part="content"]');
+
+      return Boolean(content);
+    };
+
+    if (!apply()) {
+      requestAnimationFrame(() => {
+        if (!apply()) {
+          setTimeout(apply, 50);
+        }
+      });
+    }
+  }
+
+  function configureAllMathFields() {
+    document
+      .querySelectorAll('math-field.question-option-input')
+      .forEach((mathField) => configureMathFieldHorizontalScroll(mathField));
   }
 
 })();
