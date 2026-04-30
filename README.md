@@ -195,7 +195,7 @@ To add an input field, add code of the form
 & <ShowAnswerFeedback>
 ````
 
-The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M`, `MR`, `MNR`, `MAP`, `MRP`. The `<Mode>` defines the input method (text or math), how correctness of an answer is determined and what the placeholder `<Answer>` can be:
+The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M`, `MR`, `MNR`, `MAP`, `MRP`, `ME`, `MRE`, `MNRE`, `MAPE`, `MRPE`. The `<Mode>` defines the input method (text or math), how correctness of an answer is determined and what the placeholder `<Answer>` can be:
 
 - `T[Answer]` for a short answer question with a text input field, which will be checked for an exact match with the provided answer. `Answer` must be a string. The string is split at every occurrence of `;`, and any given answer that exactly matches one of the resulting strings will be considered correct. This allows for multiple correct answers to be provided, and for answers to include `;` by escaping it as `\;`.
 - `TI[Answer]` works the same as `T[Answer]`, but the match will be case-insensitive.
@@ -213,6 +213,15 @@ The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M
 - `MNR[Answer]` is similar to `MR[Answer]`, but the evaluation of the provided answer and the values in `Answer` will be explicitly numerically. This may cause unexpected results due to rounding errors.
 - `MAP[Answer]` for a short answer question with a math input field, which will check for numerical equivalence between the provided answer and the correct answer up to a given absolute precision. In this case, `Answer` should be given in the format `CorrectAnswer;Precision`, where `CorrectAnswer` is the correct answer, which can include $\LaTeX$ math expressions that will be evaluated numerically using the [MathLive Compute Engine](https://mathlive.io/compute-engine/), and `Precision` is the desired absolute precision for the comparison, which should be a number (which can also include $\LaTeX$ math expressions that will be numerically evaluated using the MathLive Compute Engine). The provided answer will also be evaluated numerically using the MathLive Compute Engine, and it will be checked whether the absolute difference between the provided answer and the correct answer is less than or equal to the defined precision.
 - `MRP[Answer]` is similar to `MAP[Answer]`, but it will check for numerical equivalence between the provided answer and the correct answer up to a given relative precision. In this case, `Answer` should be given in the format `CorrectAnswer;Precision`, where `CorrectAnswer` is the correct answer, which can include $\LaTeX$ math expressions that will be evaluated numerically using the [MathLive Compute Engine](https://mathlive.io/compute-engine/), and `Precision` is the desired relative precision for the comparison, which should be a number (which can also include $\LaTeX$ math expressions that will be numerically evaluated using the MathLive Compute Engine). The provided answer will also be evaluated numerically using the MathLive Compute Engine, and it will be checked whether the absolute value of the difference between the provided answer and the correct answer divided by the absolute value of the correct answer is less than or equal to the defined precision.
+- `ME[Answer]`, `MRE[Answer]`, `MNRE[Answer]`, `MAPE[Answer]`, and `MRPE[Answer]` behave like `M`, `MR`, `MNR`, `MAP`, and `MRP` respectively for checking, but additionally format the **shown answer** numerically when the user clicks "Show answer".
+  - For these `...E` modes, significant digits are optionally provided as an extra trailing `;digits` in `Answer`.
+  - If digits are omitted, 5 significant digits are used.
+  - This formatting affects only shown answers, not checking.
+
+Examples:
+
+- `ME[pi/3;8]` shows `\pi/3 \evalf 1.0471976` in show-answer mode (8 significant digits).
+- `MAPE[sqrt(2);0.001;6]` checks as `MAP[sqrt(2);0.001]`, but shows an approximated value with 6 significant digits.
 
 The placeholder `<Label>` is optional and if provided will be place above the input field. This can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `<Mode>[Answer] ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same label.
 

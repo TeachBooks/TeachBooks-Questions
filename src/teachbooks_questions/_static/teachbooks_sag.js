@@ -1,6 +1,51 @@
 // Functionality for short-answer gaps questions in Teachbooks
 
 (function () {
+  function parseEvalfDigits(evalfSetting) {
+    if (!evalfSetting) return null;
+
+    const value = String(evalfSetting).trim().toLowerCase();
+    if (value === '' || value === 'no' || value === 'false' || value === '0') {
+      return null;
+    }
+    if (value === 'yes' || value === 'true') {
+      return 5;
+    }
+
+    const digits = Number.parseInt(value, 10);
+    if (Number.isInteger(digits) && digits > 0) {
+      return digits;
+    }
+
+    return null;
+  }
+
+  function isPlainFloatString(value) {
+    const trimmed = String(value).trim();
+    return /^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(trimmed);
+  }
+
+  function formatEvalfDisplay(expression, evalfSetting) {
+    const trimmed = String(expression || '').trim();
+    if (!trimmed || isPlainFloatString(trimmed)) {
+      return trimmed;
+    }
+
+    const digits = parseEvalfDigits(evalfSetting);
+    if (digits === null) {
+      return trimmed;
+    }
+
+    try {
+      const numeric = ce.parse(trimmed).N().valueOf();
+      if (typeof numeric !== 'number' || !Number.isFinite(numeric)) {
+        return trimmed;
+      }
+      return `${trimmed} \\evalf ${Number(numeric).toPrecision(digits)}`;
+    } catch (error) {
+      return trimmed;
+    }
+  }
     
     document.addEventListener("change", (event) => {
     const select = event.target.closest("select");
@@ -128,10 +173,11 @@
           inputField.value = answerSpan.textContent.trim().split(/(?<!\\);/)[0];
         }
         if (mathField) {
+          const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
           if (mathField.classList.contains('type-M')) {
             // for M type, we want to show just the first correct answer
             const correctAnswers = answerSpan.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
-            mathField.value = correctAnswers[0] || '';
+            mathField.value = formatEvalfDisplay(correctAnswers[0] || '', evalfSetting);
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
             // Keep it short, because little space in math fields
@@ -140,7 +186,7 @@
             // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
             parts = answerSpan.textContent.trim().split(';');
             centre = parts[0].trim();
-            mathField.value = centre;
+            mathField.value = formatEvalfDisplay(centre, evalfSetting);
           }
         }
         if (selectField) {

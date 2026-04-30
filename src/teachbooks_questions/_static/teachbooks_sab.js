@@ -3,6 +3,52 @@
 // Define the compute engine for math questions
 const ce = new ComputeEngine.ComputeEngine();
 
+function parseEvalfDigits(evalfSetting) {
+  if (!evalfSetting) return null;
+
+  const value = String(evalfSetting).trim().toLowerCase();
+  if (value === '' || value === 'no' || value === 'false' || value === '0') {
+    return null;
+  }
+  if (value === 'yes' || value === 'true') {
+    return 5;
+  }
+
+  const digits = Number.parseInt(value, 10);
+  if (Number.isInteger(digits) && digits > 0) {
+    return digits;
+  }
+
+  return null;
+}
+
+function isPlainFloatString(value) {
+  const trimmed = String(value).trim();
+  return /^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(trimmed);
+}
+
+function formatEvalfDisplay(expression, evalfSetting) {
+  const trimmed = String(expression || '').trim();
+  if (!trimmed || isPlainFloatString(trimmed)) {
+    return trimmed;
+  }
+
+  const digits = parseEvalfDigits(evalfSetting);
+  if (digits === null) {
+    return trimmed;
+  }
+
+  try {
+    const numeric = ce.parse(trimmed).N().valueOf();
+    if (typeof numeric !== 'number' || !Number.isFinite(numeric)) {
+      return trimmed;
+    }
+    return `${trimmed} \\evalf ${Number(numeric).toPrecision(digits)}`;
+  } catch (error) {
+    return trimmed;
+  }
+}
+
 function valueInInterval(value, interval) {
   // parse the interval string and evaluate the bounds
   // format for possible strings:
@@ -657,9 +703,13 @@ function tunedSimilarity(student, correct) {
           textArea.value = correctAnswers.join('\n    or\n');
         }
         if (mathField) {
+          const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
           if (mathField.classList.contains('type-M')) {
             // for M type, we want to show just the answers, separated by a mathematical or
-            const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+            const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => {
+              const normalized = ans.trim().replace(/\\;/g, ';');
+              return formatEvalfDisplay(normalized, evalfSetting);
+            });
             mathField.value = correctAnswers.join('\\quad\\text{or}\\quad');
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
@@ -668,7 +718,7 @@ function tunedSimilarity(student, correct) {
             // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
             parts = answerSection.textContent.trim().split(';');
             centre = parts[0].trim();
-            mathField.value = centre;
+            mathField.value = formatEvalfDisplay(centre, evalfSetting);
           }
 
           configureMathFieldHorizontalScroll(mathField);
