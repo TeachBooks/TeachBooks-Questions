@@ -347,9 +347,9 @@ class QuestionDirective(SphinxDirective):
         # Find option markers (lines starting with >, =, or ! for feedback)
         option_starts = [
             i for i, line in enumerate(options_raw)
-            if line.strip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
-            or line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX.rstrip())
-            or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX.rstrip())
+            if line.rstrip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
+            or line.rstrip().startswith(self.FEEDBACK_CORRECT_PREFIX.rstrip())
+            or line.rstrip().startswith(self.FEEDBACK_NEUTRAL_PREFIX.rstrip())
         ]
 
         options = []
@@ -363,7 +363,7 @@ class QuestionDirective(SphinxDirective):
 
     def _parse_single_no_input_option(self, block: List[str], feedback: Dict) -> Dict[str, Any]:
         """Parse a single feedback option for no-input questions."""
-        first_line = block[0].strip()
+        first_line = block[0].rstrip()
         
         # Extract label (text after > or = or ! on first line and subsequent lines)
         if first_line.startswith(self.FEEDBACK_WRONG_PREFIX.rstrip()):
@@ -390,11 +390,11 @@ class QuestionDirective(SphinxDirective):
         general = {}
         # find the feedback sections based on the prefixes
         starts = [i for i, line in enumerate(general_raw)
-                    if line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX.rstrip())
-                    or line.strip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
-                    or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX.rstrip())
-                    or line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX.rstrip())
-                    or line.strip().startswith(self.QUESTION_STRUCTURE_PREFIX.rstrip())
+                    if line.rstrip().startswith(self.FEEDBACK_CORRECT_PREFIX.rstrip())
+                    or line.rstrip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
+                    or line.rstrip().startswith(self.FEEDBACK_NEUTRAL_PREFIX.rstrip())
+                    or line.rstrip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX.rstrip())
+                    or line.rstrip().startswith(self.QUESTION_STRUCTURE_PREFIX.rstrip())
                     ]
         question_raw = []
         correct_raw = []
@@ -405,7 +405,7 @@ class QuestionDirective(SphinxDirective):
         for idx, start in enumerate(starts):
             end = starts[idx + 1] if idx + 1 < len(starts) else len(general_raw)
             block = general_raw[start:end]
-            prefix = block[0].strip()[:1]
+            prefix = block[0].rstrip()[:1]
             content = list(block)  # make a copy of the block
             content[0] = content[0].strip()[2:]  # Remove prefix from first line
             if prefix == self.FEEDBACK_CORRECT_PREFIX[0]:
@@ -686,8 +686,8 @@ class QuestionDirective(SphinxDirective):
         # Find option markers (lines starting with T[, TI[, or TF[, or M[, MR[, MNR[, MAP[, MRP[)
         option_starts = [
             i for i, line in enumerate(options_raw)
-            if len(line.strip()) > 2 and (
-                line.strip()[1:].startswith("[") or line.strip()[2:].startswith("[") or line.strip()[3:].startswith("[")
+            if len(line.rstrip()) > 2 and (
+                line.rstrip()[1:].startswith("[") or line.rstrip()[2:].startswith("[") or line.rstrip()[3:].startswith("[")
             )
         ]
 
@@ -702,7 +702,7 @@ class QuestionDirective(SphinxDirective):
 
     def _parse_single_short_answer_option(self, block: List[str], feedback: Dict) -> Dict[str, Any]:
         """Parse a single short-answer option."""
-        first_line = block[0].strip()
+        first_line = block[0].rstrip()
         
         # Extract option type and answer
         option_type = first_line.split("[")[0].strip()
@@ -729,7 +729,7 @@ class QuestionDirective(SphinxDirective):
         if line_idx < len(block):
             last_type = None
             while line_idx < len(block):
-                line = block[line_idx].strip()
+                line = block[line_idx].rstrip()
                 if line.startswith(self.FEEDBACK_WRONG_PREFIX.rstrip()):
                     if incorrect_fb:
                         incorrect_fb.append("")
@@ -923,8 +923,8 @@ class QuestionDirective(SphinxDirective):
         # Find option markers
         option_starts = [
             i for i, line in enumerate(options_raw)
-            if line.strip().startswith(self.OPTION_CHECKBOX_UNCHECKED) or
-            line.strip().startswith(self.OPTION_CHECKBOX_CHECKED)
+            if line.rstrip().startswith(self.OPTION_CHECKBOX_UNCHECKED) or
+            line.rstrip().startswith(self.OPTION_CHECKBOX_CHECKED)
         ]
 
         options = []
@@ -940,17 +940,17 @@ class QuestionDirective(SphinxDirective):
         self, block: List[str], feedback: Dict
     ) -> Dict[str, Any]:
         """Parse a single multiple-choice option."""
-        first_line = block[0].strip()
+        first_line = block[0].rstrip()
         is_correct = first_line[1] == "x"
         
         # Extract option content, feedback and "show answer" feedback
         fb_starts = [
             i for i, line in enumerate(block)
-            if line.strip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
+            if line.rstrip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
         ]
         fb_show = [
             i for i, line in enumerate(block)
-            if line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX.rstrip())
+            if line.rstrip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX.rstrip())
         ]
 
         if fb_starts and not fb_show:
@@ -958,19 +958,19 @@ class QuestionDirective(SphinxDirective):
             # use regular feedback for both regular and show answer feedback
             fb_start = fb_starts[0]
             option_content = block[:fb_start]
-            option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+            option_content[0] = option_content[0].rstrip()[3:].strip()  # Remove [ ] or [x]
             option_feedback = block[fb_start:]
-            option_feedback[0] = option_feedback[0].strip()[2:]  # Remove "> "
+            option_feedback[0] = option_feedback[0].rstrip()[2:].strip()  # Remove "> "
             option_show_answer_feedback = option_feedback
         elif fb_show and not fb_starts:
             # only show answer feedback provided
             # use default feedback for regular feedback
             fb_show_start = fb_show[0]
             option_content = block[:fb_show_start]
-            option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+            option_content[0] = option_content[0].rstrip()[3:].strip()  # Remove [ ] or [x]
             option_feedback = feedback[is_correct]
             option_show_answer_feedback = block[fb_show_start:]
-            option_show_answer_feedback[0] = option_show_answer_feedback[0].strip()[2:]  # Remove "& "
+            option_show_answer_feedback[0] = option_show_answer_feedback[0].rstrip()[2:].strip()  # Remove "& "
         elif fb_starts and fb_show:
             # both regular and show answer feedback provided
             # order might be mixed, so determine which comes first
@@ -979,23 +979,23 @@ class QuestionDirective(SphinxDirective):
             if fb_start < fb_show_start:
                 # regular feedback comes first
                 option_content = block[:fb_start]
-                option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+                option_content[0] = option_content[0].rstrip()[3:].strip()  # Remove [ ] or [x]
                 option_feedback = block[fb_start:fb_show_start]
-                option_feedback[0] = option_feedback[0].strip()[2:]  # Remove "> "
+                option_feedback[0] = option_feedback[0].rstrip()[2:].strip()  # Remove "> "
                 option_show_answer_feedback = block[fb_show_start:]
-                option_show_answer_feedback[0] = option_show_answer_feedback[0].strip()[2:]  # Remove "& "
+                option_show_answer_feedback[0] = option_show_answer_feedback[0].rstrip()[2:].strip()  # Remove "& "
             else:
                 # show answer feedback comes first
                 option_content = block[:fb_show_start]
-                option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+                option_content[0] = option_content[0].rstrip()[3:].strip()  # Remove [ ] or [x]
                 option_show_answer_feedback = block[fb_show_start:fb_start]
-                option_show_answer_feedback[0] = option_show_answer_feedback[0].strip()[2:]  # Remove "& "
+                option_show_answer_feedback[0] = option_show_answer_feedback[0].rstrip()[2:].strip()  # Remove "& "
                 option_feedback = block[fb_start:]
-                option_feedback[0] = option_feedback[0].strip()[2:]  # Remove "> "
+                option_feedback[0] = option_feedback[0].rstrip()[2:].strip()  # Remove "> "
         else:
             # no regular or show answer feedback provided, use default feedback twice
             option_content = block
-            option_content[0] = option_content[0].strip()[3:]  # Remove [ ] or [x]
+            option_content[0] = option_content[0].rstrip()[3:].strip()  # Remove [ ] or [x]
             option_feedback = feedback[is_correct]
             option_show_answer_feedback = option_feedback
 
@@ -1117,10 +1117,10 @@ class QuestionDirective(SphinxDirective):
             general_feedback = {}
             # find the feedback sections based on the prefixes
             starts = [i for i, line in enumerate(general_raw)
-                      if line.strip().startswith(self.FEEDBACK_CORRECT_PREFIX.rstrip())
-                      or line.strip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
-                      or line.strip().startswith(self.FEEDBACK_NEUTRAL_PREFIX.rstrip())
-                      or line.strip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX.rstrip())]
+                      if line.rstrip().startswith(self.FEEDBACK_CORRECT_PREFIX.rstrip())
+                      or line.rstrip().startswith(self.FEEDBACK_WRONG_PREFIX.rstrip())
+                      or line.rstrip().startswith(self.FEEDBACK_NEUTRAL_PREFIX.rstrip())
+                      or line.rstrip().startswith(self.FEEDBACK_SHOW_ANSWER_PREFIX.rstrip())]
             correct_raw = []
             incorrect_raw = []
             missed_raw = []
@@ -1129,9 +1129,9 @@ class QuestionDirective(SphinxDirective):
             for idx, start in enumerate(starts):
                 end = starts[idx + 1] if idx + 1 < len(starts) else len(general_raw)
                 block = general_raw[start:end]
-                prefix = block[0].strip()[:1]
+                prefix = block[0].rstrip()[:1]
                 content = list(block)  # make a copy of the block
-                content[0] = content[0].strip()[2:]  # Remove prefix from first line
+                content[0] = content[0].rstrip()[2:].strip()  # Remove prefix from first line
                 if prefix == self.FEEDBACK_CORRECT_PREFIX[0]:
                     correct_raw.extend(content)
                 elif prefix == self.FEEDBACK_WRONG_PREFIX[0]:
