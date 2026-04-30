@@ -697,13 +697,23 @@ class QuestionDirective(SphinxDirective):
         if not options_raw:
             return []
 
-        # Find option markers (lines starting with T[, TI[, or TF[, or M[, MR[, MNR[, MAP[, MRP[)
-        option_starts = [
-            i for i, line in enumerate(options_raw)
-            if len(line.strip()) > 2 and (
-                line.strip()[1:].startswith("[") or line.strip()[2:].startswith("[") or line.strip()[3:].startswith("[")
-            )
-        ]
+        # Find option markers and validate mode tokens early.
+        allowed_modes = {
+            "T", "TI", "TF", "M", "MR", "MNR", "MAP", "MRP",
+            "ME", "MRE", "MNRE", "MAPE", "MRPE", "DS",
+        }
+        option_starts = []
+        for i, line in enumerate(options_raw):
+            match = re.match(r"^([A-Za-z]+)\[", line.strip())
+            if not match:
+                continue
+            mode = match.group(1)
+            if mode not in allowed_modes:
+                raise ValueError(
+                    f"Unsupported short-answer mode '{mode}' at line {self.lineno + i} in "
+                    f"{self.env.docname}."
+                )
+            option_starts.append(i)
 
         options = []
         for idx, start in enumerate(option_starts):
