@@ -715,6 +715,13 @@ class QuestionDirective(SphinxDirective):
                 )
             option_starts.append(i)
 
+        if not option_starts:
+            raise ValueError(
+                f"No valid short-answer options found at line {self.lineno} in "
+                f"{self.env.docname}. Each option must start with one of "
+                f"{sorted(allowed_modes)} followed by '[', optionally separated by spaces."
+            )
+
         options = []
         for idx, start in enumerate(option_starts):
             end = option_starts[idx + 1] if idx + 1 < len(option_starts) else len(options_raw)
