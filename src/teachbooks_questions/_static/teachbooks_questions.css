@@ -154,6 +154,12 @@ div.multiple-choice section.question-options div.sd-card div.wrap-admonition {
     background-color: var(--pst-color-background);
 }
 
+/* Spacing above options and buttons sections */
+section.question-options,
+section.question-buttons {
+    margin-top: 1rem;
+}
+
 /* Style the buttons */
 section.question-buttons div.sd-card.hidden-button {
     display: none
