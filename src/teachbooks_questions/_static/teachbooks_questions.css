@@ -361,17 +361,17 @@ div.no-input section.question-options:has(div.sd-card.neutral) {
     display: block;
 }
 
-div.short-answer.gaps div.sd-card-body.question span.inline-card {
+div.short-answer.gaps .question-surface span.inline-card {
     width: 200px;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body {
+div.short-answer.gaps .question-surface span.inline-card-body {
     padding: 0;
     height:42px;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer:not(.correct):not(.incorrect):not(.parsing-error):not(.show-answer) {
+div.short-answer.gaps .question-surface span.inline-card-footer:not(.correct):not(.incorrect):not(.parsing-error):not(.show-answer) {
     display: none;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.question-option-input {
+div.short-answer.gaps .question-surface span.inline-card-body input.question-option-input {
     box-sizing: border-box;   /* include padding/border in width/height */
     width: 100%;
     border: none;             /* optional: match card’s border instead */
@@ -380,18 +380,18 @@ div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.ques
     height: 100%;
 }
 
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.question-option-input:focus {
+div.short-answer.gaps .question-surface span.inline-card-body input.question-option-input:focus {
     outline: none;
     background-color: var(--question-blue);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card:has(input:focus) {
+div.short-answer.gaps .question-surface span.inline-card:has(input:focus) {
     border-color: var(--question-blue);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body input.question-option-input::placeholder {
+div.short-answer.gaps .question-surface span.inline-card-body input.question-option-input::placeholder {
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input {
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input {
     display: inline-block;
     box-sizing: border-box;   /* include padding/border in width/height */
     width: 100%;              /* host takes card width */
@@ -401,47 +401,47 @@ div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field
     font: inherit;
 }
 /* math-field icon colors (shadow DOM) */
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input::part(virtual-keyboard-toggle),
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input::part(menu-toggle) {
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input::part(virtual-keyboard-toggle),
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input::part(menu-toggle) {
     color: var(--sd-color-card-text);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input:focus {
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input:focus {
     outline: none;
     background-color: var(--question-blue);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card:has(math-field.question-option-input:focus) {
+div.short-answer.gaps .question-surface span.inline-card:has(math-field.question-option-input:focus) {
     border-color: var(--question-blue);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input::part(placeholder) {
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input::part(placeholder) {
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }
 
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer span.inline-card-feedback {
+div.short-answer.gaps .question-surface span.inline-card-footer span.inline-card-feedback {
     display: none;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.correct span.inline-card-feedback.correct {
+div.short-answer.gaps .question-surface span.inline-card-footer.correct span.inline-card-feedback.correct {
     display: unset;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.correct {
+div.short-answer.gaps .question-surface span.inline-card-footer.correct {
     background-color: var(--question-green);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.incorrect span.inline-card-feedback.incorrect {
+div.short-answer.gaps .question-surface span.inline-card-footer.incorrect span.inline-card-feedback.incorrect {
     display: unset;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.incorrect {
+div.short-answer.gaps .question-surface span.inline-card-footer.incorrect {
     background-color: var(--question-red);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.show-answer span.inline-card-feedback.show-answer {
+div.short-answer.gaps .question-surface span.inline-card-footer.show-answer span.inline-card-feedback.show-answer {
     display: unset;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.show-answer {
+div.short-answer.gaps .question-surface span.inline-card-footer.show-answer {
     background-color: var(--question-green);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.parsing-error span.inline-card-feedback.parsing-error {
+div.short-answer.gaps .question-surface span.inline-card-footer.parsing-error span.inline-card-feedback.parsing-error {
     display: unset;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-footer.parsing-error {
+div.short-answer.gaps .question-surface span.inline-card-footer.parsing-error {
     background-color: var(--question-blue);
 }
 
@@ -462,12 +462,12 @@ div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d
 div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d-flex-row:has(div.sd-card:not(.show)) {
     display: none !important;
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body span.question-option-answer {
+div.short-answer.gaps .question-surface span.inline-card-body span.question-option-answer {
     display: none;
 }
 
 /* Select stuff */
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input {
+div.short-answer.gaps .question-surface span.inline-card-body select.question-option-input {
     box-sizing: border-box;   /* include padding/border in width/height */
     width: 100%;
     border: none;             /* optional: match card’s border instead */
@@ -477,14 +477,14 @@ div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.que
     color: var(--sd-color-card-text);
 }
 
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input:focus {
+div.short-answer.gaps .question-surface span.inline-card-body select.question-option-input:focus {
     outline: none;
     background-color: var(--question-blue);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card:has(select:focus) {
+div.short-answer.gaps .question-surface span.inline-card:has(select:focus) {
     border-color: var(--question-blue);
 }
-div.short-answer.gaps div.sd-card-body.question span.inline-card-body select.question-option-input.default-selected {
+div.short-answer.gaps .question-surface span.inline-card-body select.question-option-input.default-selected {
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }

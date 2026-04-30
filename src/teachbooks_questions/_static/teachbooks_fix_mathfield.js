@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("div.short-answer.gaps div.sd-card-body.question span.inline-card-body math-field.question-option-input")
+  document.querySelectorAll("div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input")
     .forEach(mathField => {
       // Fix the shadow DOM stuff
       const span = mathField.shadowRoot.querySelector('span');

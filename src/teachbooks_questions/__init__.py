@@ -470,31 +470,20 @@ class QuestionDirective(SphinxDirective):
         # Replace {gap} placeholders with empty inline cards
         general['question'] = [line.replace("{gap}", "{inline-card}`Body <Footer>`") for line in general['question']]
         
-        # create single full-width card with the question and the inline cards
-        question_markup = [
-            ":::{card}",
-            ":shadow: lg",
-            ":width: 100%",
-            ":class-body: question",
-            "",
-            ":::"
-        ]
+        # Use a plain docutils container for question text and inline fields.
+        # This avoids any directive-generated wrappers that could render as a card.
         question_section = nodes.section(
             classes=["question-text"],
             ids=[f"{node_id}-question"]
         )
-        self.state.nested_parse(question_markup, self.content_offset, question_section)
+        target_container = nodes.container(classes=["question", "question-surface"])
+        question_section += target_container
         node += question_section
-        # find the body of the card and populate it with the parsed question text
-        for container in question_section.findall(nodes.container):
-            card_classes = container.get("classes", [])
-            if "sd-card-body" in card_classes:
-                self.state.nested_parse(
-                    general['question'], self.content_offset, container
-                )
-                break
+        self.state.nested_parse(
+            general['question'], self.content_offset, target_container
+        )
         # Find all inline cards and populate them with the corresponding options
-        list_of_cards = container.findall(inline_card)
+        list_of_cards = target_container.findall(inline_card)
         for idx, card in enumerate(list_of_cards):
             card.classes = [f"field-{idx} field"] + card.classes
             option = options_data[idx]
