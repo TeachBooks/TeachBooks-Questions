@@ -127,6 +127,8 @@ The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This 
 
 The placeholder `<ShowAnswerFeedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `& ` (content may start on the same line or the following line). All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. ShowAnswerFeedback is optional, and if not provided, the feedback will be set to the value of the `<Feedback>` placeholder (or its default). This feedback will be shown when the user clicks the "Show answer" button, and it can be used to provide more detailed feedback or explanations related to the correct answer(s).
 
+If any of the placeholders must contain a line that starts with `[x] `, `[ ] `, `> ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` [x] This is not an option, but part of the content of an option or feedback.` will be result in rendering `[x] This is not an option, but part of the content of an option or feedback.`. 
+
 ### Syntax for multiple-choice multiple-select questions 
 
 The syntax for defining options for the `multiple-select` variant is similar to the `single-select` variant, but no restriction on the number of correct options applies, and the user can select multiple options as their answer. The syntax for defining correct and incorrect options is the same as for the `single-select` variant, as described in the previous section.
@@ -152,6 +154,8 @@ For these feedback options, the same rules apply for the content as for the feed
 - Multiple instances will be combined.
 - The content can be any code that can be parsed by Sphinx, including roles, directives and math.
 - The code can span multiple lines, as long as the first line starts with `= `, `> `, `! ` or `& ` (content may start on the same line or the following line). All following lines not starting with `= ` or `> ` or `! ` or `& ` are considered part of the feedback initiated in an earlier line.
+
+If any of the placeholders must contain a line that starts with `= `, `> `, `! ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` = This is not the start of feedback, but part of the content of feedback.` will be result in rendering `= This is not the start of feedback, but part of the content of feedback.`. 
 
 A short example of allowed code:
 
@@ -224,6 +228,8 @@ A line starting with `& ` is considered the start of the feedback shown if the "
 
 If between two lines starting with `<Mode>[Answer] ` multiple instances of correct feedback (`= `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of incorrect feedback (`> `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of show answer feedback (`& `) are found, these will be concatenated.
 
+If any of the placeholders must contain a line that starts with `<Mode>[Answer] `, `= `, `> ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` = This is not the start of feedback of a block, but part of the content of the block or feedback.` will be result in rendering `= This is not the start of feedback of a block, but part of the content of the block or feedback.`. 
+
 ### Syntax for short-answer gaps questions
 
 The code inside `<question>` for `short-answer` questions for the variant `gaps` has the following syntax.
@@ -245,7 +251,7 @@ Additionally, for the `gaps` variant, the following `<Mode>` is available:
 
 - `DS[List]` for a single-select drop-down question. `List` must be a string. The string is split at every occurrence of `;`, and every string one of the resulting strings will be included as an option in the drop-down menu,in the order provided. No default selection will be made, so the user has to actively select an option for it to be considered as an answer. Correct options must be enclosed in curly braces `{}`. For example, `DS[{Option 1};Option 2;{Option 3}]` will create a drop-down menu with three options, where `Option 1` and `Option 3` are correct, and `Option 2` is incorrect. If the symbols `{`, `}` and/or `;` should be included in an option explicitly, they must be escaped as `\{`, `\}` and `\;`.
 
-After the input fields are defined, the user __must__ include two first two lines of the code of the form
+After the input fields are defined, the user __must__ include the first two lines of the code of the form
 
 ````text
 ^^^
@@ -272,6 +278,9 @@ The placeholders `<QuestionStructure>`, `<CorrectFeedback>`, `<IncorrectFeedback
 
 Multiple instances of the same placeholder will be concatenated, so multiple lines starting with `! ` will be combined to form the complete question structure, multiple lines starting with `= ` will be combined to form the complete correct feedback, multiple lines starting with `> ` will be combined to form the complete incorrect feedback, and multiple lines starting with `& ` will be combined to form the complete show answer feedback.
 
+If any of the placeholders must contain a line that starts with `? `, `= `, `> `, `! ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` ! is a rendered exclamation mark.` will be result in rendering `! is a rendered exclamation mark.`. 
+
+
 ### Syntax for no-input no-submit questions
 
 The code inside `<question>` for `no-input` questions for the variant `no-submit` has the following syntax:
@@ -287,6 +296,8 @@ The code inside `<question>` for `no-input` questions for the variant `no-submit
 A line starting with `> `, `= ` or `! ` is considered the start of a feedback option. `<Feedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> `, `= ` or `! ` (content may start on the same line or the following line). All following lines not starting with `> `, `= ` or `! ` are considered part of the same feedback. At least one feedback option should be provided, as this will be the only content shown in the question, and it should be clear to the user that this is not a mistake but that there is indeed no input field or submit button.
 
 If multiple feedback options are provided, these will be shown as cards in a grid. The coloring of the cards will be based on whether the feedback option starts with `> `, `= ` or `! `, where `> ` indicates that the card should have the styling for incorrect answers, `= ` indicates that the card should have the styling for correct answers, and `! ` indicates that the card should have the styling for neutral or informative feedback. This allows for different types of feedback to be provided, which can be useful to provide more nuanced information to the user.
+
+If any of the placeholders must contain a line that starts with `> `, `= ` or `! `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` ! is a rendered exclamation mark.` will be result in rendering `! is a rendered exclamation mark.`. 
 
 ## Documentation
 
