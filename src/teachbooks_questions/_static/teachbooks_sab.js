@@ -27,7 +27,7 @@ function isPlainFloatString(value) {
   return /^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(trimmed);
 }
 
-function formatEvalfDisplay(expression, evalfSetting) {
+function formatEvalfDisplay(expression, evalfSetting, exactFirst = true) {
   const trimmed = String(expression || '').trim();
   if (!trimmed || isPlainFloatString(trimmed)) {
     return trimmed;
@@ -43,7 +43,10 @@ function formatEvalfDisplay(expression, evalfSetting) {
     if (typeof numeric !== 'number' || !Number.isFinite(numeric)) {
       return trimmed;
     }
-    return `${trimmed} \\approx ${Number(numeric).toPrecision(digits)}`;
+    const approxValue = Number(numeric).toPrecision(digits);
+    return exactFirst
+      ? `${trimmed} \\approx ${approxValue}`
+      : `${approxValue} \\approx ${trimmed}`;
   } catch (error) {
     return trimmed;
   }
@@ -95,7 +98,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
     if (!left) {
       return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
     }
-    return `${formatEvalfDisplay(left.expression, evalfSetting)} ${operatorToLatex(left.operator)} x`;
+    return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x`;
   }
 
   const left = parseTrailingBound(parts[0]);
@@ -104,7 +107,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
     return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
   }
 
-  return `${formatEvalfDisplay(left.expression, evalfSetting)} ${operatorToLatex(left.operator)} x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
+  return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
 }
 
 function valueInInterval(value, interval) {
