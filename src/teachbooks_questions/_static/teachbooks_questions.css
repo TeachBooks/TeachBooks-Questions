@@ -446,6 +446,9 @@ div.short-answer.gaps .question-surface span.inline-card-footer.parsing-error {
 }
 
 /* styling of the feedback in the general section of a mcms question */
+div.short-answer.gaps section.question-feedback.overall-feedback {
+    margin-top: 1rem;
+}
 div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card div.sd-card-body {
     background-color: transparent;
 }
