@@ -46,6 +46,64 @@
       return trimmed;
     }
   }
+
+  function operatorToLatex(operator) {
+    if (operator === '<=') return '\\leq';
+    if (operator === '>=') return '\\geq';
+    return operator;
+  }
+
+  function parseLeadingBound(part) {
+    if (part.startsWith('<=')) return { operator: '<=', expression: part.slice(2) };
+    if (part.startsWith('>=')) return { operator: '>=', expression: part.slice(2) };
+    if (part.startsWith('<')) return { operator: '<', expression: part.slice(1) };
+    if (part.startsWith('>')) return { operator: '>', expression: part.slice(1) };
+    return null;
+  }
+
+  function parseTrailingBound(part) {
+    if (part.endsWith('<=')) return { operator: '<=', expression: part.slice(0, -2) };
+    if (part.endsWith('>=')) return { operator: '>=', expression: part.slice(0, -2) };
+    if (part.endsWith('<')) return { operator: '<', expression: part.slice(0, -1) };
+    if (part.endsWith('>')) return { operator: '>', expression: part.slice(0, -1) };
+    return null;
+  }
+
+  function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
+    const compact = String(intervalExpression || '').replace(/\s+/g, '');
+    if (!compact) {
+      return '';
+    }
+
+    const parts = compact.split('x');
+    if (parts.length !== 2) {
+      return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+    }
+
+    if (parts[0] === '') {
+      const right = parseLeadingBound(parts[1]);
+      if (!right) {
+        return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+      }
+      return `x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
+    }
+
+    if (parts[1] === '') {
+      const left = parseTrailingBound(parts[0]);
+      if (!left) {
+        return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+      }
+      return `${formatEvalfDisplay(left.expression, evalfSetting)} ${operatorToLatex(left.operator)} x`;
+    }
+
+    const left = parseTrailingBound(parts[0]);
+    const right = parseLeadingBound(parts[1]);
+    if (!left || !right) {
+      return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+    }
+
+    return `${formatEvalfDisplay(left.expression, evalfSetting)} ${operatorToLatex(left.operator)} x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
+  }
     
     document.addEventListener("change", (event) => {
     const select = event.target.closest("select");
@@ -181,7 +239,7 @@
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
             // Keep it short, because little space in math fields
-            mathField.value = 'x\\in\\mathbb{R}:' + answerSpan.textContent.trim().replace(/>=/g, "\\geq").replace(/<=/g, "\\leq");
+            mathField.value = 'x\\in\\mathbb{R}:' + formatRangeEvalfDisplay(answerSpan.textContent.trim(), evalfSetting);
           } else if (mathField.classList.contains('type-MAP') || mathField.classList.contains('type-MRP')) {
             // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
             parts = answerSpan.textContent.trim().split(';');
