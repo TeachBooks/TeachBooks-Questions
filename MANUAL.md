@@ -169,6 +169,48 @@ MR[0<x<=1] The correct answer is a number between 0 and 1, but not including 0:
 What do you think?
 ::::
 
+### Short-answer blocks with approximation in shown answer
+
+This example shows the E-mode syntax for math input. Checking behaves like the corresponding base mode, while the shown answer is displayed as a symbolic expression together with a numerical approximation.
+
+````text
+::::{question} Short-answer blocks with approximation
+:type: short-answer
+:variant: blocks
+:showanswer:
+
+Use show answer to see symbolic and approximate forms.
+---
+ME[153/31;5] Enter a value equal to $\frac{153}{31}$:
+= Correct.
+> Try again.
+& The shown answer uses 5 significant digits.
+
+MRE[0<x<pi;6] Enter a value between $0$ and $\pi$:
+& The shown answer for the center value is displayed with 6 significant digits.
+---
+The shown answer will display forms like $153/31 \approx 4.9355$.
+::::
+````
+
+::::{question} Short-answer blocks with approximation
+:type: short-answer
+:variant: blocks
+:showanswer:
+
+Use show answer to see symbolic and approximate forms.
+---
+ME[153/31;5] Enter a value equal to $\frac{153}{31}$:
+= Correct.
+> Try again.
+& The shown answer uses 5 significant digits.
+
+MRE[0<x<pi;6] Enter a value between $0$ and $\pi$:
+& The shown answer for the center value is displayed with 6 significant digits.
+---
+The shown answer will display forms like $153/31 \approx 4.9355$.
+::::
+
 ### Short-answer fill-in-the-gaps question
 
 ````text

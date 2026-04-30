@@ -218,11 +218,6 @@ The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M
   - If digits are omitted, 5 significant digits are used.
   - This formatting affects only shown answers, not checking.
 
-Examples:
-
-- `ME[pi/3;8]` shows `\pi/3 \approx 1.0471976` in show-answer mode (8 significant digits).
-- `MAPE[sqrt(2);0.001;6]` checks as `MAP[sqrt(2);0.001]`, but shows an approximated value with 6 significant digits.
-
 The placeholder `<Label>` is optional and if provided will be place above the input field. This can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `<Mode>[Answer] ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same label.
 
 A line starting with `= ` is considered the start of the feedback if a correct answer is entered. `<CorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `= ` (content may start on the same line or the following line). All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same feedback. If not provided, the default `Correct!` will be substituted.
