@@ -220,7 +220,7 @@ The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M
 
 Examples:
 
-- `ME[pi/3;8]` shows `\pi/3 \evalf 1.0471976` in show-answer mode (8 significant digits).
+- `ME[pi/3;8]` shows `\pi/3 \approx 1.0471976` in show-answer mode (8 significant digits).
 - `MAPE[sqrt(2);0.001;6]` checks as `MAP[sqrt(2);0.001]`, but shows an approximated value with 6 significant digits.
 
 The placeholder `<Label>` is optional and if provided will be place above the input field. This can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `<Mode>[Answer] ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same label.

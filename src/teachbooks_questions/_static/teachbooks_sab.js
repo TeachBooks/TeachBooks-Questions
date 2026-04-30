@@ -43,7 +43,7 @@ function formatEvalfDisplay(expression, evalfSetting) {
     if (typeof numeric !== 'number' || !Number.isFinite(numeric)) {
       return trimmed;
     }
-    return `${trimmed} \\evalf ${Number(numeric).toPrecision(digits)}`;
+    return `${trimmed} \\approx ${Number(numeric).toPrecision(digits)}`;
   } catch (error) {
     return trimmed;
   }
