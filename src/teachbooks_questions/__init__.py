@@ -708,7 +708,7 @@ class QuestionDirective(SphinxDirective):
             raise ValueError(
                 f"No valid short-answer options found at line {self.lineno} in "
                 f"{self.env.docname}. Each option must start with one of "
-                f"{sorted(allowed_modes)} followed by '[', optionally separated by spaces."
+                f"{sorted(allowed_modes)} followed by '['."
             )
 
         options = []
