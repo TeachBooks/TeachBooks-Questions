@@ -731,7 +731,7 @@ class QuestionDirective(SphinxDirective):
             return ";".join(parts[:-1]), str(int(parts[-1]))
         else:
             raise ValueError(
-                f"Invalid at {self.lineno} in {self.env.docname}. "
+                f"Invalid formatted digits at line {self.lineno} in {self.env.docname}. "
                 f"Provide significant digits after the last unescaped ';' as an integer."
             )
 
