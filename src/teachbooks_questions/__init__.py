@@ -500,9 +500,11 @@ class QuestionDirective(SphinxDirective):
                     f"placeholder='Answer...'></input>"
                 )
             elif option["type"][0] == "M":
+                evalf_attr = option.get("evalf", "no")
                 input_html = (
                     f"<math-field class='question-option-input type-{option['type']}' "
                     f"id='{node_id}-option-{idx}-input' "
+                    f"data-evalf='{evalf_attr}' "
                     f"placeholder='\\text{{Answer...}}'>"
                     f"</math-field>"
                 )
@@ -685,7 +687,8 @@ class QuestionDirective(SphinxDirective):
 
         # Find option markers and validate mode tokens early.
         allowed_modes = {
-            "T", "TI", "TF", "M", "MR", "MNR", "MAP", "MRP", "DS",
+            "T", "TI", "TF", "M", "MR", "MNR", "MAP", "MRP",
+            "ME", "MRE", "MNRE", "MAPE", "MRPE", "DS",
         }
         option_starts = []
         for i, line in enumerate(options_raw):
@@ -716,13 +719,54 @@ class QuestionDirective(SphinxDirective):
 
         return options
 
+    def _extract_evalf_from_answer(self, answer: str) -> Tuple[str, str]:
+        """Extract optional evalf significant digits from answer syntax for E-modes.
+
+        For E-modes, the significant digits must be provided as an extra trailing
+        unescaped ';<digits>' entry.
+        """
+        parts = [part.strip() for part in re.split(r'(?<!\\);', answer)]
+        if parts and parts[-1].isdigit() and int(parts[-1]) > 0:
+            return ";".join(parts[:-1]), str(int(parts[-1]))
+        else:
+            raise ValueError(
+                f"Invalid formatted digits at line {self.lineno} in {self.env.docname}. "
+                f"Provide significant digits after the last unescaped ';' as an integer."
+            )
+
     def _parse_single_short_answer_option(self, block: List[str], feedback: Dict) -> Dict[str, Any]:
         """Parse a single short-answer option."""
         first_line = block[0].rstrip()
         
         # Extract option type and answer
-        option_type = first_line.split("[")[0].strip()
-        answer_str = first_line.split("[")[1].split("]")[0].strip()
+        raw_option_type = first_line.split("[")[0].strip()
+        if "(" in raw_option_type or ")" in raw_option_type:
+            raise ValueError(
+                f"Malformed mode '{raw_option_type}' at line {self.lineno} in {self.env.docname}."
+            )
+
+        allowed_base_modes = {"T", "TI", "TF", "M", "MR", "MNR", "MAP", "MRP", "DS"}
+        e_modes = {"ME", "MRE", "MNRE", "MAPE", "MRPE"}
+
+        answer_str_raw = first_line.split("[")[1].split("]")[0].strip()
+        if raw_option_type in e_modes:
+            option_type = raw_option_type[:-1]
+            answer_str, evalf = self._extract_evalf_from_answer(answer_str_raw)
+            if answer_str.strip() == "":
+                raise ValueError(
+                    f"Malformed answer for mode '{raw_option_type}' at line {self.lineno} in "
+                    f"{self.env.docname}. Provide an answer before optional significance digits."
+                )
+        else:
+            option_type = raw_option_type
+            answer_str = answer_str_raw
+            evalf = "no"
+
+        if option_type not in allowed_base_modes:
+            raise ValueError(
+                f"Unsupported short-answer mode '{raw_option_type}' at line {self.lineno} in "
+                f"{self.env.docname}."
+            )
         
         # Extract label (text after ] on first line and subsequent lines until feedback)
         label_start = first_line.split("]", 1)[1].strip()
@@ -779,6 +823,7 @@ class QuestionDirective(SphinxDirective):
 
         return {
             "type": option_type,
+            "evalf": evalf,
             "answer": answer_str,
             "label": label or [""],
             "correct_feedback": correct_fb,
@@ -842,9 +887,11 @@ class QuestionDirective(SphinxDirective):
                         f"placeholder='Insert your answer here...'></textarea>"
                     )
                 elif option["type"][0] == "M":
+                    evalf_attr = option.get("evalf", "no")
                     input_html = (
                         f"<math-field class='question-option-input type-{option['type']}' "
                         f"id='{node_id}-option-{current_card}-input' "
+                        f"data-evalf='{evalf_attr}' "
                         f"placeholder='\\text{{Insert your answer here...}}'>"
                         f"</math-field>"
                     )

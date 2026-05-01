@@ -3,6 +3,113 @@
 // Define the compute engine for math questions
 const ce = new ComputeEngine.ComputeEngine();
 
+function parseEvalfDigits(evalfSetting) {
+  if (!evalfSetting) return null;
+
+  const value = String(evalfSetting).trim().toLowerCase();
+  if (value === '' || value === 'no' || value === 'false' || value === '0') {
+    return null;
+  }
+  if (value === 'yes' || value === 'true') {
+    return 5;
+  }
+
+  const digits = Number.parseInt(value, 10);
+  if (Number.isInteger(digits) && digits > 0) {
+    return digits;
+  }
+
+  return null;
+}
+
+function isPlainFloatString(value) {
+  const trimmed = String(value).trim();
+  return /^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(trimmed);
+}
+
+function formatEvalfDisplay(expression, evalfSetting, exactFirst = true) {
+  const trimmed = String(expression || '').trim();
+  if (!trimmed || isPlainFloatString(trimmed)) {
+    return trimmed;
+  }
+
+  const digits = parseEvalfDigits(evalfSetting);
+  if (digits === null) {
+    return trimmed;
+  }
+
+  try {
+    const numeric = ce.parse(trimmed).N().valueOf();
+    if (typeof numeric !== 'number' || !Number.isFinite(numeric)) {
+      return trimmed;
+    }
+    const approxValue = Number(numeric).toPrecision(digits);
+    return exactFirst
+      ? `${trimmed} \\approx ${approxValue}`
+      : `${approxValue} \\approx ${trimmed}`;
+  } catch (error) {
+    return trimmed;
+  }
+}
+
+function operatorToLatex(operator) {
+  if (operator === '<=') return '\\leq';
+  if (operator === '>=') return '\\geq';
+  return operator;
+}
+
+function parseLeadingBound(part) {
+  if (part.startsWith('<=')) return { operator: '<=', expression: part.slice(2) };
+  if (part.startsWith('>=')) return { operator: '>=', expression: part.slice(2) };
+  if (part.startsWith('<')) return { operator: '<', expression: part.slice(1) };
+  if (part.startsWith('>')) return { operator: '>', expression: part.slice(1) };
+  return null;
+}
+
+function parseTrailingBound(part) {
+  if (part.endsWith('<=')) return { operator: '<=', expression: part.slice(0, -2) };
+  if (part.endsWith('>=')) return { operator: '>=', expression: part.slice(0, -2) };
+  if (part.endsWith('<')) return { operator: '<', expression: part.slice(0, -1) };
+  if (part.endsWith('>')) return { operator: '>', expression: part.slice(0, -1) };
+  return null;
+}
+
+function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
+  const compact = String(intervalExpression || '').replace(/\s+/g, '');
+  if (!compact) {
+    return '';
+  }
+
+  const parts = compact.split('x');
+  if (parts.length !== 2) {
+    return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+  }
+
+  if (parts[0] === '') {
+    const right = parseLeadingBound(parts[1]);
+    if (!right) {
+      return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+    }
+    return `x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
+  }
+
+  if (parts[1] === '') {
+    const left = parseTrailingBound(parts[0]);
+    if (!left) {
+      return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+    }
+    return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x`;
+  }
+
+  const left = parseTrailingBound(parts[0]);
+  const right = parseLeadingBound(parts[1]);
+  if (!left || !right) {
+    return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+  }
+
+  return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
+}
+
 function valueInInterval(value, interval) {
   // parse the interval string and evaluate the bounds
   // format for possible strings:
@@ -657,18 +764,22 @@ function tunedSimilarity(student, correct) {
           textArea.value = correctAnswers.join('\n    or\n');
         }
         if (mathField) {
+          const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
           if (mathField.classList.contains('type-M')) {
             // for M type, we want to show just the answers, separated by a mathematical or
-            const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+            const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => {
+              const normalized = ans.trim().replace(/\\;/g, ';');
+              return formatEvalfDisplay(normalized, evalfSetting);
+            });
             mathField.value = correctAnswers.join('\\quad\\text{or}\\quad');
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
-            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(/>=/g, "\\geq").replace(/<=/g, "\\leq");
+            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + formatRangeEvalfDisplay(answerSection.textContent.trim(), evalfSetting);
           } else if (mathField.classList.contains('type-MAP') || mathField.classList.contains('type-MRP')) {
             // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
             parts = answerSection.textContent.trim().split(';');
             centre = parts[0].trim();
-            mathField.value = centre;
+            mathField.value = formatEvalfDisplay(centre, evalfSetting);
           }
 
           configureMathFieldHorizontalScroll(mathField);
