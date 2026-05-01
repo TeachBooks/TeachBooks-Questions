@@ -491,3 +491,12 @@ div.short-answer.gaps .question-surface span.inline-card-body select.question-op
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }
+
+/* Styling for question titles not in an admonition */
+/* This is necessary to prevent styling conflicts when */
+/* questions are not rendered as admonitions */
+div.multiple-choice > p.question-title,
+div.short-answer > p.question-title,
+div.no-input > p.question-title {
+    font-weight: var(--pst-admonition-font-weight-heading);
+}

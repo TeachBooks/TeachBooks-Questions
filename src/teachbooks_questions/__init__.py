@@ -1270,7 +1270,14 @@ def depart_question_node(self, node: question_node) -> None:
         if idx >= 0:
             element = '<span class="caption-number">Question </span>'
             self.body.insert(idx + 1, element)
-    
+    # if the question is NOT rendered as an admonition,
+    # the title paragraph should not have the class "admonition-title"
+    # so replace it with "question-title" to allow styling. 
+    if not node["admonition"]:
+        node_id = node.attributes.get("ids", [""])[0]
+        search_str = f'<p class="admonition-title" id="{node_id}-title">'
+        target_str = f'<p class="question-title" id="{node_id}-title">'
+        self.body = [line.replace(search_str, target_str) for line in self.body]
     self.body.append("</div>")
 
 
