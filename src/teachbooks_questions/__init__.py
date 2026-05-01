@@ -723,14 +723,17 @@ class QuestionDirective(SphinxDirective):
     def _extract_evalf_from_answer(self, answer: str) -> Tuple[str, str]:
         """Extract optional evalf significant digits from answer syntax for E-modes.
 
-        For E-modes, the significant digits can be provided as an extra trailing
-        unescaped ';<digits>' entry. If omitted, defaults to 5.
+        For E-modes, the significant digits must be provided as an extra trailing
+        unescaped ';<digits>' entry.
         """
         parts = [part.strip() for part in re.split(r'(?<!\\);', answer)]
         if parts and parts[-1].isdigit() and int(parts[-1]) > 0:
             return ";".join(parts[:-1]), str(int(parts[-1]))
-
-        return answer, str(self.DEFAULT_EVALF_SIG_DIGITS)
+        else:
+            raise ValueError(
+                f"Invalid at {self.lineno} in {self.env.docname}. "
+                f"Provide significant digits after the last unescaped ';' as an integer."
+            )
 
     def _parse_single_short_answer_option(self, block: List[str], feedback: Dict) -> Dict[str, Any]:
         """Parse a single short-answer option."""
