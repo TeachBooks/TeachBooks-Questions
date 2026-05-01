@@ -13,7 +13,6 @@ from docutils.parsers.rst import directives
 
 class QuestionDirective(SphinxDirective):
     # Configuration
-    DEFAULT_EVALF_SIG_DIGITS = 5
     TYPES = ["multiple-choice", "short-answer","no-input"]
     VARIANTS = {
         "multiple-choice": ["single-select", "multiple-select"],
