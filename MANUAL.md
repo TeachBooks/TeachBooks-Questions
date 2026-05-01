@@ -181,15 +181,15 @@ This example shows the E-mode syntax for math input. Checking behaves like the c
 
 Use show answer to see symbolic and approximate forms.
 ---
-ME[153/31;5] Enter a value equal to $\frac{153}{31}$:
+ME[\frac{153}{31};5] Enter a value equal to $\frac{153}{31}$:
 = Correct.
 > Try again.
-& The shown answer uses 5 significant digits.
+& The shown answer uses $5$ significant digits.
 
-MRE[0<x<pi;6] Enter a value between $0$ and $\pi$:
-& The shown answer for the center value is displayed with 6 significant digits.
+MRE[0<x<\pi;6] Enter a value between $0$ and $\pi$:
+& The shown answer for the center value is displayed with $6$ significant digits.
 ---
-The shown answer will display forms like $153/31 \approx 4.9355$.
+The shown answer will display forms like $\dfrac{153}{31} \approx 4.9355$.
 ::::
 ````
 
@@ -200,15 +200,15 @@ The shown answer will display forms like $153/31 \approx 4.9355$.
 
 Use show answer to see symbolic and approximate forms.
 ---
-ME[153/31;5] Enter a value equal to $\frac{153}{31}$:
+ME[\frac{153}{31};5] Enter a value equal to $\frac{153}{31}$:
 = Correct.
 > Try again.
-& The shown answer uses 5 significant digits.
+& The shown answer uses $5$ significant digits.
 
-MRE[0<x<pi;6] Enter a value between $0$ and $\pi$:
-& The shown answer for the center value is displayed with 6 significant digits.
+MRE[0<x<\pi;6] Enter a value between $0$ and $\pi$:
+& The shown answer for the center value is displayed with $6$ significant digits.
 ---
-The shown answer will display forms like $153/31 \approx 4.9355$.
+The shown answer will display forms like $\dfrac{153}{31} \approx 4.9355$.
 ::::
 
 ### Short-answer fill-in-the-gaps question
