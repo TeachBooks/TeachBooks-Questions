@@ -1,5 +1,16 @@
 // Functionality for short-answer gaps questions in Teachbooks
 
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import {
+  checkAbsolutePrecision,
+  checkRelativePrecision,
+  containsError,
+  tunedSimilarity,
+  valueInInterval,
+  valueInIntervalNumerical,
+} from "./teachbooks_math_utils.js";
+const ce = new ComputeEngine();
+
 (function () {
   function parseEvalfDigits(evalfSetting) {
     if (!evalfSetting) return null;
@@ -146,12 +157,6 @@
       handleFocus(event.target);
     }
   }, true);
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', configureAllMathFields, { once: true });
-  } else {
-    configureAllMathFields();
-  }
   
   
     function updateSelectState(select) {
@@ -245,8 +250,8 @@
             mathField.value = 'x\\in\\mathbb{R}:' + formatRangeEvalfDisplay(answerSpan.textContent.trim(), evalfSetting);
           } else if (mathField.classList.contains('type-MAP') || mathField.classList.contains('type-MRP')) {
             // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
-            parts = answerSpan.textContent.trim().split(';');
-            centre = parts[0].trim();
+            const parts = answerSpan.textContent.trim().split(';');
+            const centre = parts[0].trim();
             mathField.value = formatEvalfDisplay(centre, evalfSetting);
           }
         }
@@ -384,7 +389,7 @@
 
       // Now check the submitted answer for parsing errors and correctness
       if (mathField) {
-        parsed = ce.parse(mathField.value).evaluate().json;
+        const parsed = ce.parse(mathField.value).evaluate().json;
         if (containsError(parsed)) {
           // display the footer as incorrect with a message about parsing error.
           // done by the class 'parsing-error'
@@ -501,7 +506,7 @@
               if (evalStudentExpr.isEqual(evalCorrectExpr)) {
                 correctlyAnswered = true;
               }
-              negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
+              const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
               if (negateStudent.isEqual(evalCorrectExpr)) {
                 correctlyAnswered = true;
               }
@@ -730,6 +735,12 @@
     document
       .querySelectorAll('math-field.question-option-input')
       .forEach((mathField) => configureMathFieldHorizontalScroll(mathField));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', configureAllMathFields, { once: true });
+  } else {
+    configureAllMathFields();
   }
 
 })();

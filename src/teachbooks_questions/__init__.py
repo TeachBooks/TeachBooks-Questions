@@ -1358,17 +1358,23 @@ def setup(app) -> Dict[str, Any]:
     app.add_css_file("inline-card.css")
     js_files = [
         "https://cdn.jsdelivr.net/npm/mathlive",
-        "https://cdn.jsdelivr.net/npm/@cortex-js/compute-engine/dist/compute-engine.min.js",
         "teachbooks_wrapadmonition.js",
         "teachbooks_mcss.js",
         "teachbooks_mcms.js",
-        "teachbooks_sab.js",
-        "teachbooks_sag.js",
         "teachbooks_nins.js",
         "teachbooks_fix_mathfield.js",
     ]
     for js_file in js_files:
         app.add_js_file(js_file)
+    app.add_js_file("teachbooks_sab.js",
+        type="module"
+    )
+    app.add_js_file("teachbooks_sag.js",
+        type="module"
+    )
+    app.add_js_file("teachbooks_math_utils.js",
+        type="module"
+    )
     
     # Add static files path
     static_path = os.path.join(os.path.dirname(__file__), "_static")

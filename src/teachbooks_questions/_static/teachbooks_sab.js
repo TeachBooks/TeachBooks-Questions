@@ -1,7 +1,18 @@
 // Functionality for short-answer block questions in Teachbooks
 
 // Define the compute engine for math questions
-const ce = new ComputeEngine.ComputeEngine();
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import {
+  checkAbsolutePrecision,
+  checkRelativePrecision,
+  containsError,
+  tunedSimilarity,
+  valueInInterval,
+  valueInIntervalNumerical,
+} from "./teachbooks_math_utils.js";
+const ce = new ComputeEngine();
+
+const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
 
 function parseEvalfDigits(evalfSetting) {
   if (!evalfSetting) return null;
@@ -110,240 +121,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
   return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
 }
 
-function valueInInterval(value, interval) {
-  // parse the interval string and evaluate the bounds
-  // format for possible strings:
-  // - `x < a` for values less than `a`.
-  // - `x <= a` for values less than or equal to `a`.
-  // - `x > a` for values greater than `a`.
-  // - `x >= a` for values greater than or equal to `a`.
-  // - `a < x < b` for values between `a` and `b`,
-  // - `a <= x < b` for values between `a` and `b`, including `a` but not `b`.
-  // - `a < x <= b` for values between `a` and `b`, including `b` but not `a`.
-  // - `a <= x <= b` for values between `a` and `b`, including both `a` and `b`.
-  
-  // first split the interval into parts based on the x. We expect either "x < a" or "a < x < b" type formats
-  const parts = interval.replace(/\s+/g, '').split('x');
-  Nvalue = ce.parse(value).evaluate().valueOf();
-  // If the first part is empty, we have a format with one bound
-  if (parts[0] === '') {
-    // first get the operator and the number
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).evaluate().valueOf();
-      return (Nvalue <= bound);
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).evaluate().valueOf();
-      return (Nvalue < bound);
-    } else if (parts[1].startsWith('>=')) {
-      bound = ce.parse(parts[1].split('>=')[1]).evaluate().valueOf();
-      return (Nvalue >= bound);
-    } else if (parts[1].startsWith('>')) {
-      bound = ce.parse(parts[1].split('>')[1]).evaluate().valueOf();
-      return (Nvalue > bound);
-    } else {
-      console.error('Invalid interval format: ', interval);
-      return false;
-    }
-  } else if (parts[1] === '') {
-    console.error('Invalid interval format: ', interval);
-    return false;
-  } else {
-    // we have a format with two bounds, so we need to check both
-    // start with the left part
-    let left = false;
-    let right = false;
-    if (parts[0].endsWith('<=')) {
-      bound = ce.parse(parts[0].split('<=')[0]).evaluate().valueOf();
-      if (Nvalue >= bound) left = true;
-    } else if (parts[0].endsWith('<')) {
-      bound = ce.parse(parts[0].split('<')[0]).evaluate().valueOf();
-      if (Nvalue > bound) left = true;
-    }
-    // now check the right part
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).evaluate().valueOf();
-      if (Nvalue <= bound) right = true;
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).evaluate().valueOf();
-      if (Nvalue < bound) right = true;
-    }
-    return (left && right);
-  }
-}
-
-function valueInIntervalNumerical(value, interval) {
-  // parse the interval string and evaluate the bounds
-  // format for possible strings:
-  // - `x < a` for values less than `a`.
-  // - `x <= a` for values less than or equal to `a`.
-  // - `x > a` for values greater than `a`.
-  // - `x >= a` for values greater than or equal to `a`.
-  // - `a < x < b` for values between `a` and `b`,
-  // - `a <= x < b` for values between `a` and `b`, including `a` but not `b`.
-  // - `a < x <= b` for values between `a` and `b`, including `b` but not `a`.
-  // - `a <= x <= b` for values between `a` and `b`, including both `a` and `b`.
-  
-  // first split the interval into parts based on the x. We expect either "x < a" or "a < x < b" type formats
-  const parts = interval.replace(/\s+/g, '').split('x');
-  Nvalue = ce.parse(value).N().valueOf();
-  // If the first part is empty, we have a format with one bound
-  if (parts[0] === '') {
-    // first get the operator and the number
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).N().valueOf();
-      return (Nvalue <= bound);
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).N().valueOf();
-      return (Nvalue < bound);
-    } else if (parts[1].startsWith('>=')) {
-      bound = ce.parse(parts[1].split('>=')[1]).N().valueOf();
-      return (Nvalue >= bound);
-    } else if (parts[1].startsWith('>')) {
-      bound = ce.parse(parts[1].split('>')[1]).N().valueOf();
-      return (Nvalue > bound);
-    } else {
-      console.error('Invalid interval format: ', interval);
-      return false;
-    }
-  } else if (parts[1] === '') {
-    console.error('Invalid interval format: ', interval);
-    return false;
-  } else {
-    // we have a format with two bounds, so we need to check both
-    // start with the left part
-    let left = false;
-    let right = false;
-    if (parts[0].endsWith('<=')) {
-      bound = ce.parse(parts[0].split('<=')[0]).N().valueOf();
-      if (Nvalue >= bound) left = true;
-    } else if (parts[0].endsWith('<')) {
-      bound = ce.parse(parts[0].split('<')[0]).N().valueOf();
-      if (Nvalue > bound) left = true;
-    }
-    // now check the right part
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).N().valueOf();
-      if (Nvalue <= bound) right = true;
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).N().valueOf();
-      if (Nvalue < bound) right = true;
-    }
-    return (left && right);
-  }
-}
-
-function checkAbsolutePrecision(value, correct, precision) {
-  // Convert to interval format and use the valueInIntervalNumerical function
-  const lowerBound = ce.box(["Subtract", ce.parse(correct), ce.parse(precision)]).toLatex();
-  const upperBound = ce.box(["Add", ce.parse(correct), ce.parse(precision)]).toLatex();
-  const interval = `${lowerBound} <= x <= ${upperBound}`;
-  return valueInIntervalNumerical(value, interval);
-}
-
-function checkRelativePrecision(value, correct, precision) {
-  // Reuse absolute precision checking by calculating the absolute precision from the relative precision
-  const absCenter = ce.box(["Abs", ce.parse(correct)]);
-  const absPrecision = ce.box(["Multiply", absCenter, ce.parse(precision)]).toLatex();
-  return checkAbsolutePrecision(value, correct, absPrecision);
-}
-
-function jaroWinkler(a, b) {
-  if (a === b) return 1;
-
-  const m = Math.floor(Math.max(a.length, b.length) / 2) - 1;
-  let matches = 0;
-  let transpositions = 0;
-  const aMatches = [];
-  const bMatches = [];
-
-  // matching window
-  for (let i = 0; i < a.length; i++) {
-    const start = Math.max(0, i - m);
-    const end = Math.min(i + m + 1, b.length);
-    for (let j = start; j < end; j++) {
-      if (!bMatches[j] && a[i] === b[j]) {
-        aMatches[i] = bMatches[j] = true;
-        matches++;
-        break;
-      }
-    }
-  }
-  if (!matches) return 0;
-
-  // transpositions
-  let k = 0;
-  for (let i = 0; i < a.length; i++) {
-    if (aMatches[i]) {
-      while (!bMatches[k]) k++;
-      if (a[i] !== b[k]) transpositions++;
-      k++;
-    }
-  }
-  transpositions /= 2;
-
-  const jaro = (
-    (matches / a.length) +
-    (matches / b.length) +
-    ((matches - transpositions) / matches)
-  ) / 3;
-
-  // Winkler prefix
-  let prefix = 0;
-  for (let i = 0; i < Math.min(4, a.length, b.length); i++) {
-    if (a[i] === b[i]) prefix++;
-    else break;
-  }
-
-  return jaro + prefix * 0.05 * (1 - jaro);
-}
-
-function tunedSimilarity(student, correct) {
-  const s = student.normalize("NFC").trim().toLowerCase();
-  const c = correct.normalize("NFC").trim().toLowerCase();
-
-  if (s === c) return 1;
-
-  const base = jaroWinkler(s, c);
-
-  // 1. prefix penalty (detects un-, in-, dis-, non-, mis-, etc.)
-  const prefixFlips = ['un', 'in', 'im', 'il', 'ir', 'non', 'dis', 'mis'];
-  let prefixPenalty = 0;
-
-  for (let p of prefixFlips) {
-    if (correct.startsWith(p) !== student.startsWith(p)) {
-      prefixPenalty += 0.08;
-    }
-  }
-
-  // 2. keyword sensitivity: important words in the correct answer
-  const keywords = correct
-    .toLowerCase()
-    .match(/[a-zA-Z]+/g)
-    .filter(w => w.length >= 4);
-
-  let keywordPenalty = 0;
-  keywords.forEach(word => {
-    if (!student.toLowerCase().includes(word)) {
-      keywordPenalty += 0.02;
-    }
-  });
-
-  // 3. length ratio penalty
-  const lenRatio = student.length / correct.length;
-  let lengthPenalty = 0;
-  if (lenRatio < 0.75 || lenRatio > 1.35) {
-    lengthPenalty = 0.05;
-  }
-
-  // final combined score
-  let score = base - prefixPenalty - keywordPenalty - lengthPenalty;
-  score = Math.max(0, Math.min(1, score));
-
-  return score;
-}
-
 (function () {
-  const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
 
   function configureMathFieldHorizontalScroll(mathField) {
     if (!mathField) {
@@ -553,7 +331,7 @@ function tunedSimilarity(student, correct) {
               if (evalStudentExpr.isEqual(evalCorrectExpr)) {
                 correctlyAnswered = true;
               }
-              negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
+              const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
               if (negateStudent.isEqual(evalCorrectExpr)) {
                 correctlyAnswered = true;
               }
@@ -706,7 +484,7 @@ function tunedSimilarity(student, correct) {
 
       // Now check the submitted answer for parsing errors and correctness
       if (mathField) {
-        parsed = ce.parse(mathField.value).evaluate().json;
+        const parsed = ce.parse(mathField.value).evaluate().json;
         if (containsError(parsed)) {
           // display the footer as incorrect with a message about parsing error.
           // done by the class 'parsing-error'
@@ -777,8 +555,8 @@ function tunedSimilarity(student, correct) {
             mathField.value = '\\text\{any number \}x\\text\{ such that \}' + formatRangeEvalfDisplay(answerSection.textContent.trim(), evalfSetting);
           } else if (mathField.classList.contains('type-MAP') || mathField.classList.contains('type-MRP')) {
             // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
-            parts = answerSection.textContent.trim().split(';');
-            centre = parts[0].trim();
+            const parts = answerSection.textContent.trim().split(';');
+            const centre = parts[0].trim();
             mathField.value = formatEvalfDisplay(centre, evalfSetting);
           }
 
@@ -853,25 +631,3 @@ function tunedSimilarity(student, correct) {
     configureAllMathFields();
   }
 })();
-
-function containsError(node) {
-  if (node === null || node === undefined) return false;
-
-  // If it's an Error expression
-  if (Array.isArray(node) && node[0] === "Error") {
-    return true;
-  }
-
-  // If it's an array, recursively check all children
-  if (Array.isArray(node)) {
-    return node.some(child => containsError(child));
-  }
-
-  // If it's an object (rare in canonical MathJSON), scan values
-  if (typeof node === "object") {
-    return Object.values(node).some(value => containsError(value));
-  }
-
-  // Primitive (string, number, symbol) → no error
-  return false;
-}
