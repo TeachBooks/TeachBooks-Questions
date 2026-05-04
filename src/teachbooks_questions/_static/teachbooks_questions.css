@@ -73,12 +73,27 @@ div.multiple-choice section.question-options div.sd-card.option div.sd-card-body
 }
 
 /* Styling of the feedback in the footers */
-section.question-options div.sd-card-footer:not(.correct):not(.incorrect) {
+section.question-options div.sd-card-footer:not(.correct):not(.incorrect):not(.parsing-error):not(.show-answer) {
+    display: none;
+}
+section.question-options div.sd-card-footer:not(.correct):not(.incorrect):not(.parsing-error):not(.show-answer) section {
     display: none;
 }
 section.question-options div.sd-card-footer.correct {
     display: block;
     background-color: var(--question-green);
+}
+section.question-options div.sd-card-footer.show-feedback section.question-feedback {
+    display: block;
+}
+section.question-options div.sd-card-footer.show-feedback section.question-show {
+    display: none;
+}
+section.question-options div.sd-card-footer.show-answer section.question-show {
+    display: block;
+}
+section.question-options div.sd-card-footer.show-answer section.question-feedback:not(.show-answer) {
+    display: none;
 }
 div.multiple-choice section.question-options div.sd-card-footer.correct:hover {
     background-color: var(--question-green-hover);
@@ -97,6 +112,28 @@ div.multiple-choice section.question-options div.sd-card:has(div.sd-card-footer.
     background-color: var(--question-blue-hover);
 }
 
+section.question-options div.sd-card-footer.parsing-error {
+    display: block;
+    background-color: var(--question-blue);
+}
+div.multiple-choice section.question-options div.sd-card-footer.parsing-error:hover {
+    background-color: var(--question-blue-hover);
+}
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-footer.parsing-error:hover) div.sd-card-body.selected {
+    background-color: var(--question-blue-hover);
+}
+
+section.question-options div.sd-card-footer.show-answer:not(.incorrect) {
+    display: block;
+    background-color: var(--question-green);
+}
+div.multiple-choice section.question-options div.sd-card-footer.show-answer:not(.incorrect):hover {
+    background-color: var(--question-green-hover);
+}
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-footer.show-answer:not(.incorrect):hover) div.sd-card-body.selected {
+    background-color: var(--question-blue-hover);
+}
+
 /* Styling of the options on selection */
 div.multiple-choice section.question-options div.sd-card-body.selected {
     background-color: var(--question-blue);
@@ -104,10 +141,10 @@ div.multiple-choice section.question-options div.sd-card-body.selected {
 div.multiple-choice section.question-options div.sd-card-body.selected:hover {
     background-color: var(--question-blue-hover);
 }
-div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body.selected:hover) div.sd-card-footer.correct {
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body:hover) div.sd-card-footer.correct {
     background-color: var(--question-green-hover);
 }
-div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body.selected:hover) div.sd-card-footer.incorrect {
+div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body:hover) div.sd-card-footer.incorrect {
     background-color: var(--question-red-hover);
 }
 
@@ -115,6 +152,12 @@ div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body.se
 /* add a background */
 div.multiple-choice section.question-options div.sd-card div.wrap-admonition {
     background-color: var(--pst-color-background);
+}
+
+/* Spacing above options and buttons sections */
+section.question-options,
+section.question-buttons {
+    margin-top: 1rem;
 }
 
 /* Style the buttons */
@@ -207,13 +250,22 @@ div.short-answer.blocks section.question-options div.sd-card-body.input textarea
     color: var(--sd-color-card-text);
     opacity: 0.5; /* ensure placeholder is visible */
 }
-div.short-answer.blocks section.question-options div.sd-card-footer.correct section.incorrect {
+div.short-answer.blocks section.question-options div.sd-card-footer.correct section:not(.correct) {
     display: none;
 }
 
-div.short-answer.blocks section.question-options div.sd-card-footer.incorrect section.correct {
+div.short-answer.blocks section.question-options div.sd-card-footer.incorrect section:not(.incorrect) {
     display: none;
 }
+
+div.short-answer.blocks section.question-options div.sd-card-footer.parsing-error section:not(.parsing-error) {
+    display: none;
+}
+
+div.short-answer.blocks section.question-options div.sd-card-footer.show-answer section:not(.show-answer) {
+    display: none;
+}
+
 div.short-answer.blocks section.question-options div.sd-card-body.input section.question-option-answer {
     display: none;
 }
@@ -276,11 +328,175 @@ div.short-answer.blocks section.question-options div.sd-card-body.input math-fie
   }
 
 div.multiple-choice .sd-card .sd-card-header,
+div.multiple-choice .sd-card .sd-card-body,
 div.short-answer .sd-card .sd-card-header,
+div.no-input .sd-card .sd-card-header,
 div.multiple-choice div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
 div.short-answer div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
+div.no-input div.sd-card .sd-card-body:not(.selected, .incorrect, .correct),
 div.multiple-choice .sd-card .sd-card-footer:not(.correct, .incorrect),
-div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect)
+div.short-answer .sd-card .sd-card-footer:not(.correct, .incorrect, .parsing-error, .show-answer),
+div.no-input .sd-card .sd-card-footer:not(.correct, .incorrect)
  {
     background-color: transparent !important;
+}
+
+/* No input questions */
+div.no-input section.question-options div.sd-card.correct {
+    background-color: var(--question-green);
+}
+div.no-input section.question-options div.sd-card.incorrect {
+    background-color: var(--question-red);
+}
+div.no-input section.question-options div.sd-card.neutral {
+    background-color: var(--question-blue);
+}
+
+div.no-input section.question-options {
+    display: none;
+}
+div.no-input section.question-options:has(div.sd-card.correct),
+div.no-input section.question-options:has(div.sd-card.incorrect),
+div.no-input section.question-options:has(div.sd-card.neutral) {
+    display: block;
+}
+
+div.short-answer.gaps .question-surface span.inline-card {
+    width: 200px;
+}
+div.short-answer.gaps .question-surface span.inline-card-body {
+    padding: 0;
+    height:42px;
+}
+div.short-answer.gaps .question-surface span.inline-card-footer:not(.correct):not(.incorrect):not(.parsing-error):not(.show-answer) {
+    display: none;
+}
+div.short-answer.gaps .question-surface span.inline-card-body input.question-option-input {
+    box-sizing: border-box;   /* include padding/border in width/height */
+    width: 100%;
+    border: none;             /* optional: match card’s border instead */
+    font: inherit;
+    background-color: var(--question-white);
+    height: 100%;
+}
+
+div.short-answer.gaps .question-surface span.inline-card-body input.question-option-input:focus {
+    outline: none;
+    background-color: var(--question-blue);
+}
+div.short-answer.gaps .question-surface span.inline-card:has(input:focus) {
+    border-color: var(--question-blue);
+}
+div.short-answer.gaps .question-surface span.inline-card-body input.question-option-input::placeholder {
+    color: var(--sd-color-card-text);
+    opacity: 0.5; /* ensure placeholder is visible */
+}
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input {
+    display: inline-block;
+    box-sizing: border-box;   /* include padding/border in width/height */
+    width: 100%;              /* host takes card width */
+    height: 100%;             /* match container if container has a height */
+    border: none;             /* optional: match card's border instead */
+    background-color: var(--question-white);
+    font: inherit;
+}
+/* math-field icon colors (shadow DOM) */
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input::part(virtual-keyboard-toggle),
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input::part(menu-toggle) {
+    color: var(--sd-color-card-text);
+}
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input:focus {
+    outline: none;
+    background-color: var(--question-blue);
+}
+div.short-answer.gaps .question-surface span.inline-card:has(math-field.question-option-input:focus) {
+    border-color: var(--question-blue);
+}
+div.short-answer.gaps .question-surface span.inline-card-body math-field.question-option-input::part(placeholder) {
+    color: var(--sd-color-card-text);
+    opacity: 0.5; /* ensure placeholder is visible */
+}
+
+div.short-answer.gaps .question-surface span.inline-card-footer span.inline-card-feedback {
+    display: none;
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.correct span.inline-card-feedback.correct {
+    display: unset;
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.correct {
+    background-color: var(--question-green);
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.incorrect span.inline-card-feedback.incorrect {
+    display: unset;
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.incorrect {
+    background-color: var(--question-red);
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.show-answer span.inline-card-feedback.show-answer {
+    display: unset;
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.show-answer {
+    background-color: var(--question-green);
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.parsing-error span.inline-card-feedback.parsing-error {
+    display: unset;
+}
+div.short-answer.gaps .question-surface span.inline-card-footer.parsing-error {
+    background-color: var(--question-blue);
+}
+
+/* styling of the feedback in the general section of a mcms question */
+div.short-answer.gaps section.question-feedback.overall-feedback {
+    margin-top: 1rem;
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card div.sd-card-body {
+    background-color: transparent;
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card.correct,
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card.show-answer {
+    background-color: var(--question-green);
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-card:not(.correct, .show-answer) {
+    background-color: var(--question-red);
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d-flex-row:has(div.sd-card.show) {
+    display: flex !important;
+}
+div.short-answer.gaps section.question-feedback.overall-feedback div.sd-col.sd-d-flex-row:has(div.sd-card:not(.show)) {
+    display: none !important;
+}
+div.short-answer.gaps .question-surface span.inline-card-body span.question-option-answer {
+    display: none;
+}
+
+/* Select stuff */
+div.short-answer.gaps .question-surface span.inline-card-body select.question-option-input {
+    box-sizing: border-box;   /* include padding/border in width/height */
+    width: 100%;
+    border: none;             /* optional: match card’s border instead */
+    font: inherit;
+    background-color: var(--question-white);
+    height: 100%;
+    color: var(--sd-color-card-text);
+}
+
+div.short-answer.gaps .question-surface span.inline-card-body select.question-option-input:focus {
+    outline: none;
+    background-color: var(--question-blue);
+}
+div.short-answer.gaps .question-surface span.inline-card:has(select:focus) {
+    border-color: var(--question-blue);
+}
+div.short-answer.gaps .question-surface span.inline-card-body select.question-option-input.default-selected {
+    color: var(--sd-color-card-text);
+    opacity: 0.5; /* ensure placeholder is visible */
+}
+
+/* Styling for question titles not in an admonition */
+/* This is necessary to prevent styling conflicts when */
+/* questions are not rendered as admonitions */
+div.multiple-choice > p.question-title,
+div.short-answer > p.question-title,
+div.no-input > p.question-title {
+    font-weight: var(--pst-admonition-font-weight-heading);
 }

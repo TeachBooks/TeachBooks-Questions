@@ -5,6 +5,11 @@ A Sphinx extension to create and include multiple-choice and short-answer questi
 
 This extensions defines a `question` directive that typesets either a multiple-choice question or a short-answer question, including (automatic) feedback, buttons and styling options.
 
+Available are:
+- Multiple-choice questions, with the option to select one or multiple correct answers.
+- Short-answer questions with text or math input fields, with various options for how the provided answer is checked for correctness.
+- Questions without input fields or submit buttons, which can be used to provide information or ask reflective questions without the need for user input.
+
 ## Installation
 To install the Sphinx-Metadata-Figure extension, follow these steps:
 
@@ -73,26 +78,37 @@ Each of the options and placeholders will be shortly explained next:
 
 - `<title>`: Including a title is optional.
 - `:label: <label>`: Adding a label is optional. Can be used for unnumbered internal references.
-- `:type: <type>`: Defines the type of the question. Available are `multiple-choice` and `short-answer`. If not given, _defaults_ to `multiple-choice`.
-- `:variant: <variant>`: Defines the variant within the type of the question. If not given, the default value for the type is selected. For the type `multiple-choice` the variants `single-select` (_default_) and `multiple-select` are available. For the type `short-answer` the variant `block` (_default_) is available.
+- `:type: <type>`: Defines the type of the question. Available are
+  - `multiple-choice` (_default_)
+  - `short-answer`
+  - `no-input`
+- `:variant: <variant>`: Defines the variant within the type of the question. If not given, the default value for the type is selected.`
+  - For the type `multiple-choice` available variants are
+    - `single-select` (_default_)
+    - `multiple-select`
+  - For the type `short-answer` available variants are
+    - `block` (_default_)
+    - `gaps`
+  - For the type `no-input` the variant `no-submit` (_default_) is available.
 - `:columns: <columns>`: Number of columns to use for displaying the options for `multiple-choice` questions (_default_: `1 1 2 2`) or for the input blocks for the `short-answer block` questions (_default_: `1 1 1 1`). See [Grids](https://sphinx-design.readthedocs.io/en/latest/grids.html), second paragraph for more details. Either one single number or 4 numbers can be provided. If one single number is provided, it will be used for all screen sizes. If 4 numbers are provided, they will be used for the 4 screen sizes (small, medium, large and extra large) in that order.
 - `:class: <class>`: The classes to be added to the class list of the `div` element for styling purposes.
 - `:admonition:` If included, `admonition` will be added to the classes of the containing `<div>`. Can also be done through the `:class:` option.
 - `:nocaption:` If included, no caption will be added to the question. By default, a caption is added with the text "Question". This option can be used to hide the caption. If also no title is provided, the question will have neither a title nor a caption shown. If a title is provided, the title will be shown without surrounding brackets.
-- `:showanswer:`: If included, a button will be added to show the correct answer(s) and related feedback.
+- `:showanswer:`: If included, a button will be added to show the correct answer(s) and related feedback. In case of `no-input no-submit` questions, this button will always be shown to display the provided feedback.
 - `<pre-question>`: Optional content to be included before the options/input fields. Will be parsed, so nesting of elements is possible.
 - `<question>`: Code that defines the content of the options/input fields, including (in)correct answers and feedback. See [Syntax for multiple-choice questions](#syntax-for-multiple-choice-questions) and [Syntax for short-answer blocks questions](#syntax-for-short-answer-blocks-questions). Everything between the first `---` and the second `---` is considered part of this part of the code.
 - `<post-question>`: Optional content to be included after the options/input fields. Will be parsed, so nesting of elements is possible.
 
-### Syntax for multiple-choice questions
+### Syntax for multiple-choice single-select questions 
 
-The code inside `<question>` for `multiple-choice` questions is for both variants based on the same syntax.
+The code inside `<question>` for `multiple-choice` questions is for the variant `single-select` has the following syntax.
 
 To define a single correct option, add code of the form
 
 ````text
 [x] <Option>
 > <Feedback>
+& <ShowAnswerFeedback>
 ````
 
 and to define a single incorrect option, add code of the form
@@ -100,11 +116,46 @@ and to define a single incorrect option, add code of the form
 ````text
 [ ] <Option>
 > <Feedback>
+& <ShowAnswerFeedback>
 ````
 
-The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same option.
+Any number of options can be provided, but at least one correct option should be provided.
 
-The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
+The placeholder `<Option>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `[x] ` or `[ ] ` and is directly followed by some code. All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same option.
+
+The placeholder `<Feedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `> ` (content may start on the same line or the following line). All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. Feedback is optional, and if not provided, the feedback will be `Correct!` or `Incorrect.`, based on whether the previous option is correct (`[x] `) or incorrect (`[  ] `).
+
+The placeholder `<ShowAnswerFeedback>` can be any code that can be parsed by Sphinx. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the feedback starts with `& ` (content may start on the same line or the following line). All following lines not starting with `[x] ` or `[ ] ` or `> ` or `& ` are considered part of the same feedback. ShowAnswerFeedback is optional, and if not provided, the feedback will be set to the value of the `<Feedback>` placeholder (or its default). This feedback will be shown when the user clicks the "Show answer" button, and it can be used to provide more detailed feedback or explanations related to the correct answer(s).
+
+If any of the placeholders must contain a line that starts with `[x] `, `[ ] `, `> ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` [x] This is not an option, but part of the content of an option or feedback.` will be result in rendering `[x] This is not an option, but part of the content of an option or feedback.`. 
+
+### Syntax for multiple-choice multiple-select questions 
+
+The syntax for defining options for the `multiple-select` variant is similar to the `single-select` variant, but no restriction on the number of correct options applies, and the user can select multiple options as their answer. The syntax for defining correct and incorrect options is the same as for the `single-select` variant, as described in the previous section.
+
+After the options are defined, the user can include code of the form
+
+````text
+^^^
+= <CorrectFeedback>
+> <IncorrectFeedback>
+! <MissedFeedback>
+& <MissedAndIncorrectFeedback>
+````
+
+to provide feedback for when the user clicks the "Submit" button, based on whether they selected all correct options and no incorrect options (`<CorrectFeedback>`), at least one incorrect option but no missed correct options (`<IncorrectFeedback>`), at least one missed correct option but no incorrect options (`<MissedFeedback>`) or at least one missed correct option and at least one incorrect option (`<MissedAndIncorrectFeedback>`). Each of these feedback options is optional, and if not provided, the following default feedback will be used:
+
+- `<CorrectFeedback>`: Well done!
+- `<IncorrectFeedback>`: Try again! You selected at least one incorrect option.
+- `<MissedFeedback>`: Try again! You missed at least one correct option.
+- `<MissedAndIncorrectFeedback>`: Try again! You selected at least one incorrect option and missed at least one correct option.
+
+For these feedback options, the same rules apply for the content as for the feedback related to each option:
+- Multiple instances will be combined.
+- The content can be any code that can be parsed by Sphinx, including roles, directives and math.
+- The code can span multiple lines, as long as the first line starts with `= `, `> `, `! ` or `& ` (content may start on the same line or the following line). All following lines not starting with `= ` or `> ` or `! ` or `& ` are considered part of the feedback initiated in an earlier line.
+
+If any of the placeholders must contain a line that starts with `= `, `> `, `! ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` = This is not the start of feedback, but part of the content of feedback.` will be result in rendering `= This is not the start of feedback, but part of the content of feedback.`. 
 
 A short example of allowed code:
 
@@ -117,13 +168,22 @@ has several lines and is also marked as correct answer.
 You can include directives.
 :::
 
+& This feedback will be shown when the user clicks the "Show answer" button.
+
 [ ] An incorrect option.
 
 > $$
 \int_{a}^{b} f(x)\,dx.
 $$
 
-Display math is also possible.
+Display math is also possible. This feedback will also be shown when the user clicks the "Show answer" button, since no specific show answer feedback is provided for this option.
+
+[ ] Another incorrect option without specific feedback or show answer feedback. This will use the default feedback for both, which is `Incorrect.`.
+
+[x] Another correct option without specific feedback, but with specific show answer feedback.
+& This feedback will be shown when the user clicks the "Show answer" button, but since no specific feedback is provided for this option, the default `Correct!` feedback will be shown when the user selects this option as an answer.
+^^^
+= Perfect, you selected all correct options!
 ````
 
 ### Syntax for short-answer blocks questions
@@ -136,14 +196,15 @@ To add an input field, add code of the form
 <Mode>[<Answer>] <Label>
 = <CorrectFeedback>
 > <IncorrectFeedback>
+& <ShowAnswerFeedback>
 ````
 
-The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M`, `MR`, `MNR`, `MAP`, `MRP`. The `<Mode>` defines the input method (text or math), how correctness of an answer is determined and what the placeholder `<Answer>` can be:
+The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M`, `MR`, `MNR`, `MAP`, `MRP`, `ME`, `MRE`, `MNRE`, `MAPE`, `MRPE`. The `<Mode>` defines the input method (text or math), how correctness of an answer is determined and what the placeholder `<Answer>` can be:
 
-- `T[Answer]` for a short answer question with a text input field, which will be checked for an exact match with the provided answer.
-- `TI[Answer]` for a short answer question with a text input field, which will be checked for a case-insensitive match with the provided answer.
-- `TF[Answer]` for a short answer question with a text input field, which will be checked for a fuzzy case-insensitive match with the provided answer. Be aware that this can lead to some unexpected answers being marked as (in)correct, and it is recommended to use this option only for longer answers where minor typos are more likely to occur, and to check the provided answer carefully for potential issues with the fuzzy matching.
-- `M[Answer]` for a short answer question with a math input field, which will check for a (simple) equality check with the provided answer using the function [`is()`](https://mathlive.io/compute-engine/guides/symbolic-computing/#smart-comparison-is) from the [MathLive Compute Engine](https://mathlive.io/compute-engine/).
+- `T[Answer]` for a short answer question with a text input field, which will be checked for an exact match with the provided answer. `Answer` must be a string. The string is split at every occurrence of `;`, and any given answer that exactly matches one of the resulting strings will be considered correct. This allows for multiple correct answers to be provided, and for answers to include `;` by escaping it as `\;`.
+- `TI[Answer]` works the same as `T[Answer]`, but the match will be case-insensitive.
+- `TF[Answer]` works the same as `T[Answer]`, but the match will be fuzzy and case-insensitive. Be aware that this can lead to some unexpected answers being marked as (in)correct, and it is recommended to use this option only for longer answers where minor typos are more likely to occur, and to check the provided answer carefully for potential issues with the fuzzy matching.
+- `M[Answer]` for a short answer question with a math input field, which will check for a (simple) equality check with the provided answer using the function [`is()`](https://mathlive.io/compute-engine/guides/symbolic-computing/#smart-comparison-is) from the [MathLive Compute Engine](https://mathlive.io/compute-engine/). Same as for `T[Answer]`, `Answer` can include multiple answers separated by unescaped `;`, and `;` can be included in an answer by escaping it as `\;`. Note that the provided answer will also be evaluated using the MathLive Compute Engine, so it should be in a format that can be evaluated to get the expected result.
 - `MR[Answer] ` for a short answer question with a math input field, which will check whether the provided answer falls within the range defined by `Answer`. In this case `Answer` should be given as one of the following, where `a` and/or `b` should be replaced with the desired numbers, which can also include $\LaTeX$ math expressions that will be evaluated using the [MathLive Compute Engine](https://mathlive.io/compute-engine/). The value provided by the user will also be evaluated using the MathLive Compute Engine, and it will be checked whether this value falls within the defined range. Note that some expression will not evaluate to a number, unless explicitly numerically evaluated, and these will not be accepted as correct answers for `MR` type questions (see the `MNR` type for this). Examples of valid formats for `Answer` for `MR` type questions are:
   - `x < a` for values less than `a`.
   - `x <= a` for values less than or equal to `a`.
@@ -156,14 +217,91 @@ The placeholder `<Mode>` must be one of the following modes: `T`, `TI`, `TF`, `M
 - `MNR[Answer]` is similar to `MR[Answer]`, but the evaluation of the provided answer and the values in `Answer` will be explicitly numerically. This may cause unexpected results due to rounding errors.
 - `MAP[Answer]` for a short answer question with a math input field, which will check for numerical equivalence between the provided answer and the correct answer up to a given absolute precision. In this case, `Answer` should be given in the format `CorrectAnswer;Precision`, where `CorrectAnswer` is the correct answer, which can include $\LaTeX$ math expressions that will be evaluated numerically using the [MathLive Compute Engine](https://mathlive.io/compute-engine/), and `Precision` is the desired absolute precision for the comparison, which should be a number (which can also include $\LaTeX$ math expressions that will be numerically evaluated using the MathLive Compute Engine). The provided answer will also be evaluated numerically using the MathLive Compute Engine, and it will be checked whether the absolute difference between the provided answer and the correct answer is less than or equal to the defined precision.
 - `MRP[Answer]` is similar to `MAP[Answer]`, but it will check for numerical equivalence between the provided answer and the correct answer up to a given relative precision. In this case, `Answer` should be given in the format `CorrectAnswer;Precision`, where `CorrectAnswer` is the correct answer, which can include $\LaTeX$ math expressions that will be evaluated numerically using the [MathLive Compute Engine](https://mathlive.io/compute-engine/), and `Precision` is the desired relative precision for the comparison, which should be a number (which can also include $\LaTeX$ math expressions that will be numerically evaluated using the MathLive Compute Engine). The provided answer will also be evaluated numerically using the MathLive Compute Engine, and it will be checked whether the absolute value of the difference between the provided answer and the correct answer divided by the absolute value of the correct answer is less than or equal to the defined precision.
+- `ME[Answer]`, `MRE[Answer]`, `MNRE[Answer]`, `MAPE[Answer]`, and `MRPE[Answer]` behave like `M`, `MR`, `MNR`, `MAP`, and `MRP` respectively for checking, but additionally format the **shown answer** numerically when the user clicks "Show answer" using a specified number of significant digits.
+  - For range modes (`MRE`/`MNRE`), each bound expression in the shown range is approximated individually (for example `0 < x < pi/3` becomes `0 < x < pi/3 \approx 1.0472` on the bound side where approximation applies, using $5$ significant digits).
+  - For these `...E` modes, significant digits must be provided as an extra trailing `;<digits>` in `Answer`, where `<digits>` is a non-negative integer defining the number of significant digits to use for the numerical formatting when the user clicks "Show answer". For example, `ME[pi;3]` will check whether the provided answer is mathematically equivalent to $\pi$, but when the user clicks "Show answer", the shown correct answer will be `pi \approx 3.14`, since $\pi$ approximated to 3 significant digits is 3.14.
+  - This formatting affects only shown answers, not checking.
 
-The placeholder `<Label>` is optional and if provided will be place above the input field. This can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `<Mode>[Answer] ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same label.
+The placeholder `<Label>` is optional and if provided will be place above the input field. This can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `<Mode>[Answer] ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same label.
 
-A line starting with `= ` is considered the start of the feedback if a correct answer is entered. `<CorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `= ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same feedback. If not provided, the default `Correct!` will be substituted.
+A line starting with `= ` is considered the start of the feedback if a correct answer is entered. `<CorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `= ` (content may start on the same line or the following line). All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same feedback. If not provided, the default `Correct!` will be substituted.
 
-A line starting with `> ` is considered the start of the feedback if an incorrect answer is entered. `<IncorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> ` and is directly followed by some code. All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` are considered part of the same feedback. If not provided, the default `Incorrect.` will be substituted.
+A line starting with `> ` is considered the start of the feedback if an incorrect answer is entered. `<IncorrectFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> ` (content may start on the same line or the following line). All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same feedback. If not provided, the default `Incorrect.` will be substituted.
 
-If between two lines starting with `<Mode>[Answer] ` multiple instances of correct feedback (`= `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of incorrect feedback (`> `) are found, these will be concatenated.
+A line starting with `& ` is considered the start of the feedback shown if the "Show answer" button is clicked. `<ShowAnswerFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `& ` (content may start on the same line or the following line). All following lines not starting with `<Mode>[Answer] ` or `= ` or `> ` or `& ` are considered part of the same feedback. If not provided, the value of `<CorrectFeedback>` will be substituted.
+
+If between two lines starting with `<Mode>[Answer] ` multiple instances of correct feedback (`= `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of incorrect feedback (`> `) are found, these will be concatenated. If between two lines starting with `<Mode>[Answer] ` multiple instances of show answer feedback (`& `) are found, these will be concatenated.
+
+If any of the placeholders must contain a line that starts with `<Mode>[Answer] `, `= `, `> ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` = This is not the start of feedback of a block, but part of the content of the block or feedback.` will be result in rendering `= This is not the start of feedback of a block, but part of the content of the block or feedback.`. 
+
+### Syntax for short-answer gaps questions
+
+The code inside `<question>` for `short-answer` questions for the variant `gaps` has the following syntax.
+
+To add an input field, add code of the form
+
+````text
+<Mode>[<Answer>]
+= <CorrectFeedback>
+> <IncorrectFeedback>
+& <ShowAnswerFeedback>
+````
+
+The placeholders have the same meaning and rules as for the `blocks` variant, but in this case no label can be provided for the input field.
+
+The feedback options for the `gaps` variant are more limited than the `blocks` variant, as the feedback will be rendered as inline elements. This means only simple MarkDown text (styling) and math can be included. Roles and directives are not allowed in the feedback for the `gaps` variant, and if included, they can lead to rendering issues. For the same reason, code spanning multiple lines is not allowed for the feedback options for the `gaps` variant. This means only the first line of the feedback will be used, and any following lines will be ignored.
+
+Additionally, for the `gaps` variant, the following `<Mode>` is available:
+
+- `DS[List]` for a single-select drop-down question. `List` must be a string. The string is split at every occurrence of `;`, and every string one of the resulting strings will be included as an option in the drop-down menu,in the order provided. No default selection will be made, so the user has to actively select an option for it to be considered as an answer. Correct options must be enclosed in curly braces `{}`. For example, `DS[{Option 1};Option 2;{Option 3}]` will create a drop-down menu with three options, where `Option 1` and `Option 3` are correct, and `Option 2` is incorrect. If the symbols `{`, `}` and/or `;` should be included in an option explicitly, they must be escaped as `\{`, `\}` and `\;`.
+
+After the input fields are defined, the user __must__ include the first two lines of the code of the form
+
+````text
+^^^
+? <QuestionStructure>
+= <CorrectFeedback>
+> <IncorrectFeedback>
+! <MixedFeedback>
+& <ShowAnswerFeedback>
+````
+
+The placeholder `<QuestionStructure>` should include the text of the question, with gaps for the input fields. The gaps should be indicated by `{gap}`. The number of gaps should correspond to the number of input fields defined in the previous part of the code, and they will be replaced by the input fields in the rendered question in the same order.
+
+The placeholder `<CorrectFeedback>` should include the feedback to be displayed when the user provided all correct answers. Default is `You filled in all gaps correctly.`.
+
+The placeholder `<IncorrectFeedback>` should include the feedback to be displayed when the user provided only incorrect answers. Default is `You filled in none of the gaps correctly.`.
+
+The placeholder `<MixedFeedback>` should include the feedback to be displayed when the user provided some incorrect and some correct answers. Default is `You filled in some gaps correctly, but also some incorrectly.`.
+
+The placeholder `<ShowAnswerFeedback>` should include the feedback to be displayed when the user clicks the "Show answer" button. Default is `The correct answers are shown above.`
+
+Each of these feedback options is optional, and if not provided, the default feedback will be used.
+
+The placeholders `<QuestionStructure>`, `<CorrectFeedback>`, `<IncorrectFeedback>`, and `<ShowAnswerFeedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the placeholder starts with `? `, `= `, `> `, `! ` or `& ` (content may start on the same line or the following line). All following lines not starting with `? ` or `= ` or `> ` or `! ` or `& ` are considered part of the same placeholder.
+
+Multiple instances of the same placeholder will be concatenated, so multiple lines starting with `! ` will be combined to form the complete question structure, multiple lines starting with `= ` will be combined to form the complete correct feedback, multiple lines starting with `> ` will be combined to form the complete incorrect feedback, and multiple lines starting with `& ` will be combined to form the complete show answer feedback.
+
+If any of the placeholders must contain a line that starts with `? `, `= `, `> `, `! ` or `& `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` ! is a rendered exclamation mark.` will be result in rendering `! is a rendered exclamation mark.`. 
+
+
+### Syntax for no-input no-submit questions
+
+The code inside `<question>` for `no-input` questions for the variant `no-submit` has the following syntax:
+
+````text
+> <Feedback>
+
+= <Feedback>
+
+! <Feedback>
+````
+
+A line starting with `> `, `= ` or `! ` is considered the start of a feedback option. `<Feedback>` can be any code that Sphinx can render. This includes roles, directives and math. Code spanning multiple lines is also allowed, as long as the first line of the option starts with `> `, `= ` or `! ` (content may start on the same line or the following line). All following lines not starting with `> `, `= ` or `! ` are considered part of the same feedback. At least one feedback option should be provided, as this will be the only content shown in the question, and it should be clear to the user that this is not a mistake but that there is indeed no input field or submit button.
+
+If multiple feedback options are provided, these will be shown as cards in a grid. The coloring of the cards will be based on whether the feedback option starts with `> `, `= ` or `! `, where `> ` indicates that the card should have the styling for incorrect answers, `= ` indicates that the card should have the styling for correct answers, and `! ` indicates that the card should have the styling for neutral or informative feedback. This allows for different types of feedback to be provided, which can be useful to provide more nuanced information to the user.
+
+If any of the placeholders must contain a line that starts with `> `, `= ` or `! `, these can be escaped by preceding the symbol with one or more spaces ` `, so for example ` ! is a rendered exclamation mark.` will be result in rendering `! is a rendered exclamation mark.`. 
 
 ## Documentation
 

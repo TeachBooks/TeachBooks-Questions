@@ -1,242 +1,127 @@
 // Functionality for short-answer block questions in Teachbooks
 
 // Define the compute engine for math questions
-const ce = new ComputeEngine.ComputeEngine();
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import {
+  checkAbsolutePrecision,
+  checkRelativePrecision,
+  containsError,
+  tunedSimilarity,
+  valueInInterval,
+  valueInIntervalNumerical,
+} from "./teachbooks_math_utils.js";
+const ce = new ComputeEngine();
 
-function valueInInterval(value, interval) {
-  // parse the interval string and evaluate the bounds
-  // format for possible strings:
-  // - `x < a` for values less than `a`.
-  // - `x <= a` for values less than or equal to `a`.
-  // - `x > a` for values greater than `a`.
-  // - `x >= a` for values greater than or equal to `a`.
-  // - `a < x < b` for values between `a` and `b`,
-  // - `a <= x < b` for values between `a` and `b`, including `a` but not `b`.
-  // - `a < x <= b` for values between `a` and `b`, including `b` but not `a`.
-  // - `a <= x <= b` for values between `a` and `b`, including both `a` and `b`.
-  
-  // first split the interval into parts based on the x. We expect either "x < a" or "a < x < b" type formats
-  const parts = interval.replace(/\s+/g, '').split('x');
-  Nvalue = ce.parse(value).evaluate().valueOf();
-  // If the first part is empty, we have a format with one bound
+const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
+
+function parseEvalfDigits(evalfSetting) {
+  if (!evalfSetting) return null;
+
+  const value = String(evalfSetting).trim().toLowerCase();
+  if (value === '' || value === 'no' || value === 'false' || value === '0') {
+    return null;
+  }
+  if (value === 'yes' || value === 'true') {
+    return 5;
+  }
+
+  const digits = Number.parseInt(value, 10);
+  if (Number.isInteger(digits) && digits > 0) {
+    return digits;
+  }
+
+  return null;
+}
+
+function isPlainFloatString(value) {
+  const trimmed = String(value).trim();
+  return /^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(trimmed);
+}
+
+function formatEvalfDisplay(expression, evalfSetting, exactFirst = true) {
+  const trimmed = String(expression || '').trim();
+  if (!trimmed || isPlainFloatString(trimmed)) {
+    return trimmed;
+  }
+
+  const digits = parseEvalfDigits(evalfSetting);
+  if (digits === null) {
+    return trimmed;
+  }
+
+  try {
+    const numeric = ce.parse(trimmed).N().valueOf();
+    if (typeof numeric !== 'number' || !Number.isFinite(numeric)) {
+      return trimmed;
+    }
+    const approxValue = Number(numeric).toPrecision(digits);
+    return exactFirst
+      ? `${trimmed} \\approx ${approxValue}`
+      : `${approxValue} \\approx ${trimmed}`;
+  } catch (error) {
+    return trimmed;
+  }
+}
+
+function operatorToLatex(operator) {
+  if (operator === '<=') return '\\leq';
+  if (operator === '>=') return '\\geq';
+  return operator;
+}
+
+function parseLeadingBound(part) {
+  if (part.startsWith('<=')) return { operator: '<=', expression: part.slice(2) };
+  if (part.startsWith('>=')) return { operator: '>=', expression: part.slice(2) };
+  if (part.startsWith('<')) return { operator: '<', expression: part.slice(1) };
+  if (part.startsWith('>')) return { operator: '>', expression: part.slice(1) };
+  return null;
+}
+
+function parseTrailingBound(part) {
+  if (part.endsWith('<=')) return { operator: '<=', expression: part.slice(0, -2) };
+  if (part.endsWith('>=')) return { operator: '>=', expression: part.slice(0, -2) };
+  if (part.endsWith('<')) return { operator: '<', expression: part.slice(0, -1) };
+  if (part.endsWith('>')) return { operator: '>', expression: part.slice(0, -1) };
+  return null;
+}
+
+function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
+  const compact = String(intervalExpression || '').replace(/\s+/g, '');
+  if (!compact) {
+    return '';
+  }
+
+  const parts = compact.split('x');
+  if (parts.length !== 2) {
+    return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
+  }
+
   if (parts[0] === '') {
-    // first get the operator and the number
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).evaluate().valueOf();
-      return (Nvalue <= bound);
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).evaluate().valueOf();
-      return (Nvalue < bound);
-    } else if (parts[1].startsWith('>=')) {
-      bound = ce.parse(parts[1].split('>=')[1]).evaluate().valueOf();
-      return (Nvalue >= bound);
-    } else if (parts[1].startsWith('>')) {
-      bound = ce.parse(parts[1].split('>')[1]).evaluate().valueOf();
-      return (Nvalue > bound);
-    } else {
-      console.error('Invalid interval format: ', interval);
-      return false;
+    const right = parseLeadingBound(parts[1]);
+    if (!right) {
+      return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
     }
-  } else if (parts[1] === '') {
-    console.error('Invalid interval format: ', interval);
-    return false;
-  } else {
-    // we have a format with two bounds, so we need to check both
-    // start with the left part
-    let left = false;
-    let right = false;
-    if (parts[0].endsWith('<=')) {
-      bound = ce.parse(parts[0].split('<=')[0]).evaluate().valueOf();
-      if (Nvalue >= bound) left = true;
-    } else if (parts[0].endsWith('<')) {
-      bound = ce.parse(parts[0].split('<')[0]).evaluate().valueOf();
-      if (Nvalue > bound) left = true;
-    }
-    // now check the right part
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).evaluate().valueOf();
-      if (Nvalue <= bound) right = true;
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).evaluate().valueOf();
-      if (Nvalue < bound) right = true;
-    }
-    return (left && right);
-  }
-}
-
-function valueInIntervalNumerical(value, interval) {
-  // parse the interval string and evaluate the bounds
-  // format for possible strings:
-  // - `x < a` for values less than `a`.
-  // - `x <= a` for values less than or equal to `a`.
-  // - `x > a` for values greater than `a`.
-  // - `x >= a` for values greater than or equal to `a`.
-  // - `a < x < b` for values between `a` and `b`,
-  // - `a <= x < b` for values between `a` and `b`, including `a` but not `b`.
-  // - `a < x <= b` for values between `a` and `b`, including `b` but not `a`.
-  // - `a <= x <= b` for values between `a` and `b`, including both `a` and `b`.
-  
-  // first split the interval into parts based on the x. We expect either "x < a" or "a < x < b" type formats
-  const parts = interval.replace(/\s+/g, '').split('x');
-  Nvalue = ce.parse(value).N().valueOf();
-  // If the first part is empty, we have a format with one bound
-  if (parts[0] === '') {
-    // first get the operator and the number
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).N().valueOf();
-      return (Nvalue <= bound);
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).N().valueOf();
-      return (Nvalue < bound);
-    } else if (parts[1].startsWith('>=')) {
-      bound = ce.parse(parts[1].split('>=')[1]).N().valueOf();
-      return (Nvalue >= bound);
-    } else if (parts[1].startsWith('>')) {
-      bound = ce.parse(parts[1].split('>')[1]).N().valueOf();
-      return (Nvalue > bound);
-    } else {
-      console.error('Invalid interval format: ', interval);
-      return false;
-    }
-  } else if (parts[1] === '') {
-    console.error('Invalid interval format: ', interval);
-    return false;
-  } else {
-    // we have a format with two bounds, so we need to check both
-    // start with the left part
-    let left = false;
-    let right = false;
-    if (parts[0].endsWith('<=')) {
-      bound = ce.parse(parts[0].split('<=')[0]).N().valueOf();
-      if (Nvalue >= bound) left = true;
-    } else if (parts[0].endsWith('<')) {
-      bound = ce.parse(parts[0].split('<')[0]).N().valueOf();
-      if (Nvalue > bound) left = true;
-    }
-    // now check the right part
-    if (parts[1].startsWith('<=')) {
-      bound = ce.parse(parts[1].split('<=')[1]).N().valueOf();
-      if (Nvalue <= bound) right = true;
-    } else if (parts[1].startsWith('<')) {
-      bound = ce.parse(parts[1].split('<')[1]).N().valueOf();
-      if (Nvalue < bound) right = true;
-    }
-    return (left && right);
-  }
-}
-
-function checkAbsolutePrecision(value, correct, precision) {
-  // Convert to interval format and use the valueInIntervalNumerical function
-  const lowerBound = ce.box(["Subtract", ce.parse(correct), ce.parse(precision)]).valueOf();
-  const upperBound = ce.box(["Add", ce.parse(correct), ce.parse(precision)]).valueOf();
-  const interval = `${lowerBound} <= x <= ${upperBound}`;
-  return valueInIntervalNumerical(value, interval);
-}
-
-function checkRelativePrecision(value, correct, precision) {
-  // Reuse absolute precision checking by calculating the absolute precision from the relative precision
-  const absCenter = ce.box(["Abs", ce.parse(correct)]).evaluate().valueOf();
-  const absPrecision = ce.box(["Multiply", absCenter, ce.parse(precision)]).valueOf();
-  return checkAbsolutePrecision(value, correct, absPrecision);
-}
-
-function jaroWinkler(a, b) {
-  if (a === b) return 1;
-
-  const m = Math.floor(Math.max(a.length, b.length) / 2) - 1;
-  let matches = 0;
-  let transpositions = 0;
-  const aMatches = [];
-  const bMatches = [];
-
-  // matching window
-  for (let i = 0; i < a.length; i++) {
-    const start = Math.max(0, i - m);
-    const end = Math.min(i + m + 1, b.length);
-    for (let j = start; j < end; j++) {
-      if (!bMatches[j] && a[i] === b[j]) {
-        aMatches[i] = bMatches[j] = true;
-        matches++;
-        break;
-      }
-    }
-  }
-  if (!matches) return 0;
-
-  // transpositions
-  let k = 0;
-  for (let i = 0; i < a.length; i++) {
-    if (aMatches[i]) {
-      while (!bMatches[k]) k++;
-      if (a[i] !== b[k]) transpositions++;
-      k++;
-    }
-  }
-  transpositions /= 2;
-
-  const jaro = (
-    (matches / a.length) +
-    (matches / b.length) +
-    ((matches - transpositions) / matches)
-  ) / 3;
-
-  // Winkler prefix
-  let prefix = 0;
-  for (let i = 0; i < Math.min(4, a.length, b.length); i++) {
-    if (a[i] === b[i]) prefix++;
-    else break;
+    return `x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
   }
 
-  return jaro + prefix * 0.05 * (1 - jaro);
-}
-
-function tunedSimilarity(student, correct) {
-  const s = student.normalize("NFC").trim().toLowerCase();
-  const c = correct.normalize("NFC").trim().toLowerCase();
-
-  if (s === c) return 1;
-
-  const base = jaroWinkler(s, c);
-
-  // 1. prefix penalty (detects un-, in-, dis-, non-, mis-, etc.)
-  const prefixFlips = ['un', 'in', 'im', 'il', 'ir', 'non', 'dis', 'mis'];
-  let prefixPenalty = 0;
-
-  for (let p of prefixFlips) {
-    if (correct.startsWith(p) !== student.startsWith(p)) {
-      prefixPenalty += 0.08;
+  if (parts[1] === '') {
+    const left = parseTrailingBound(parts[0]);
+    if (!left) {
+      return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
     }
+    return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x`;
   }
 
-  // 2. keyword sensitivity: important words in the correct answer
-  const keywords = correct
-    .toLowerCase()
-    .match(/[a-zA-Z]+/g)
-    .filter(w => w.length >= 4);
-
-  let keywordPenalty = 0;
-  keywords.forEach(word => {
-    if (!student.toLowerCase().includes(word)) {
-      keywordPenalty += 0.02;
-    }
-  });
-
-  // 3. length ratio penalty
-  const lenRatio = student.length / correct.length;
-  let lengthPenalty = 0;
-  if (lenRatio < 0.75 || lenRatio > 1.35) {
-    lengthPenalty = 0.05;
+  const left = parseTrailingBound(parts[0]);
+  const right = parseLeadingBound(parts[1]);
+  if (!left || !right) {
+    return compact.replace(/>=/g, '\\geq').replace(/<=/g, '\\leq');
   }
 
-  // final combined score
-  let score = base - prefixPenalty - keywordPenalty - lengthPenalty;
-  score = Math.max(0, Math.min(1, score));
-
-  return score;
+  return `${formatEvalfDisplay(left.expression, evalfSetting, false)} ${operatorToLatex(left.operator)} x ${operatorToLatex(right.operator)} ${formatEvalfDisplay(right.expression, evalfSetting)}`;
 }
 
 (function () {
-  const MATH_SCROLL_STYLE_ID = 'data-tb-visible-scrollbar';
 
   function configureMathFieldHorizontalScroll(mathField) {
     if (!mathField) {
@@ -407,35 +292,56 @@ function tunedSimilarity(student, correct) {
 
     switch (answerType) {
       case 'T':
-        return stripped === correctAnswer;
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersT = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+        // check if the stripped student answer matches any of the correct answers exactly
+         return correctAnswersT.includes(stripped)
       case 'TI':
-        return stripped.toLowerCase() === correctAnswer.toLowerCase();
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersTI = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';').toLowerCase());
+        // check if the stripped student answer matches any of the correct answers case-insensitively
+        return correctAnswersTI.includes(stripped.toLowerCase());
       case 'TF':
-        return tunedSimilarity(stripped, correctAnswer) >= 0.9;
+        // split the correct answer at unescaped ';' to allow for multiple correct answers, and trim each resulting answer
+        const correctAnswersTF = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+        // check if the stripped student answer matches any of the correct answers case-insensitively
+        for (let ans of correctAnswersTF) {
+          if (tunedSimilarity(stripped, ans) >= 0.9) {
+            return true; // If we've already found a correct answer, no need to check further
+          }
+        }
+        return false; // If no correct answer matched, return false
       case 'M':
         // convert both to Expressions and compare
         try {
-          const studentExpr = ce.parse(stripped);
-          const correctExpr = ce.parse(correctAnswer);
-          const studentEquation = studentExpr.head === 'Equal';
-          const correctEquation = correctExpr.head === 'Equal';
-          if (studentEquation && correctEquation) {
-            const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
-            const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
-            if (evalStudentExpr.isEqual(evalCorrectExpr)) {
-              return true;
+          // loop over correct answers split at unescaped ';' to allow for multiple correct answers, and return true if any of them matches the student answer
+          const correctAnswersM = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+          let correctlyAnswered = false;
+          for (let ans of correctAnswersM) {
+            if (correctlyAnswered) {
+              break; // If we've already found a correct answer, no need to check further
             }
-            negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
-            if (negateStudent.isEqual(evalCorrectExpr)) {
-              return true;
+            const studentExpr = ce.parse(stripped);
+            const correctExpr = ce.parse(ans);
+            const studentEquation = studentExpr.head === 'Equal';
+            const correctEquation = correctExpr.head === 'Equal';
+            if (studentEquation && correctEquation) {
+              const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
+              const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+              if (evalStudentExpr.isEqual(evalCorrectExpr)) {
+                correctlyAnswered = true;
+              }
+              const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
+              if (negateStudent.isEqual(evalCorrectExpr)) {
+                correctlyAnswered = true;
+              }
+            } else if (!studentEquation && !correctEquation) {
+              if (studentExpr.isEqual(correctExpr)) {
+                correctlyAnswered = true;
+              }
             }
-            return false;
-          } else if (!studentEquation && !correctEquation) {
-            return studentExpr.isEqual(correctExpr);
-          } else {
-            return false;
           }
-
+          return correctlyAnswered;
         }
         catch (e) {
           console.error('Error parsing math input: ', e);
@@ -544,7 +450,7 @@ function tunedSimilarity(student, correct) {
     if (questionOptionsSection) {
       clearShowAnswerMode(questionDiv, true, true);
       questionOptionsSection.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
-        footer.classList.remove('correct', 'incorrect');
+        footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
       });
     }
   }
@@ -574,7 +480,18 @@ function tunedSimilarity(student, correct) {
         return;
       }
 
-      footer.classList.remove('correct', 'incorrect');
+      footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
+
+      // Now check the submitted answer for parsing errors and correctness
+      if (mathField) {
+        const parsed = ce.parse(mathField.value).evaluate().json;
+        if (containsError(parsed)) {
+          // display the footer as incorrect with a message about parsing error.
+          // done by the class 'parsing-error'
+          footer.classList.add('parsing-error');
+          return;
+        }
+      }
 
       const answerType = getAnswerType(textArea || mathField);
       const correctAnswer = answerSection ? answerSection.textContent.trim() : null;
@@ -605,8 +522,8 @@ function tunedSimilarity(student, correct) {
         return;
       }
 
-      footer.classList.remove('incorrect');
-      footer.classList.add('correct');
+      footer.classList.remove('correct','incorrect', 'parsing-error');
+      footer.classList.add('show-answer');
 
       if (textArea) {
         textArea.classList.add('show-answer');
@@ -618,26 +535,29 @@ function tunedSimilarity(student, correct) {
 
       if (answerSection) {
         if (textArea) {
-          textArea.value = answerSection.textContent.trim();
+          // for text answers, we add a line for each correct answer (split at unescaped ';')
+          // to make it clearer when there are multiple correct answers
+          // between each line we also add a line with just "    or" to further clarify that any of the answers is correct
+          const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
+          textArea.value = correctAnswers.join('\n    or\n');
         }
         if (mathField) {
+          const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
           if (mathField.classList.contains('type-M')) {
-            mathField.value = answerSection.textContent.trim();
+            // for M type, we want to show just the answers, separated by a mathematical or
+            const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => {
+              const normalized = ans.trim().replace(/\\;/g, ';');
+              return formatEvalfDisplay(normalized, evalfSetting);
+            });
+            mathField.value = correctAnswers.join('\\quad\\text{or}\\quad');
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
-            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + answerSection.textContent.trim().replace(/>=/g, "\\geq").replace(/<=/g, "\\leq");
-          } else if (mathField.classList.contains('type-MAP')) {
-            // for MAP type, we want to show some extra text to indicate the correct answer is a range
-            parts = answerSection.textContent.trim().split(';');
-            centre = parts[0].trim();
-            radius = parts[1].trim();
-            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius;
-          } else if (mathField.classList.contains('type-MRP')) {
-            // for MRP type, we want to show some extra text to indicate the correct answer is a range
-            parts = answerSection.textContent.trim().split(';');
-            centre = parts[0].trim();
-            radius = parts[1].trim();
-            mathField.value = '\\text\{any number \}x\\text\{ such that \} |x - \left(' + centre + '\right)| \\leq ' + radius + '\\cdot |\left(' + centre + '\right)|';
+            mathField.value = '\\text\{any number \}x\\text\{ such that \}' + formatRangeEvalfDisplay(answerSection.textContent.trim(), evalfSetting);
+          } else if (mathField.classList.contains('type-MAP') || mathField.classList.contains('type-MRP')) {
+            // for MAP/MRP type, we want to show just the answer, as precision is not relevant to show
+            const parts = answerSection.textContent.trim().split(';');
+            const centre = parts[0].trim();
+            mathField.value = formatEvalfDisplay(centre, evalfSetting);
           }
 
           configureMathFieldHorizontalScroll(mathField);
@@ -673,7 +593,7 @@ function tunedSimilarity(student, correct) {
     clearShowAnswerMode(questionDiv, true, false);
     // Remove all feedback
     questionDiv.querySelectorAll('div.sd-card-footer').forEach(function (footer) {
-      footer.classList.remove('correct', 'incorrect');
+      footer.classList.remove('correct', 'incorrect', 'parsing-error','show-answer');
     });
   }
 
