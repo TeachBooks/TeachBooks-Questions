@@ -314,8 +314,7 @@ This tool's repository is stored on [GitHub](https://github.com/TeachBooks/Teach
 
 ## Stuff we would like to add in the future
 
-- Add a variant `fill-in-the-gaps` to the type `short-answer`
-- Add a dropdown mode for short-answer
+- Add an image-based question
 - Add a javascript mode for short-answer
 - Configuration options
 - i18n
