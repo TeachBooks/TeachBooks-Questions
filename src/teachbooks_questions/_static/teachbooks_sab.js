@@ -549,7 +549,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
               const normalized = ans.trim().replace(/\\;/g, ';');
               return formatEvalfDisplay(normalized, evalfSetting);
             });
-            mathField.value = correctAnswers.join('\\quad\\text{or}\\quad');
+            mathField.value = correctAnswers.join('\\quad\\text{or}\\quad{}');
           } else if (mathField.classList.contains('type-MR') || mathField.classList.contains('type-MNR')) {
             // for M(N)R type, we want to show some extra text to indicate the correct answer is a range
             mathField.value = '\\text\{any number \}x\\text\{ such that \}' + formatRangeEvalfDisplay(answerSection.textContent.trim(), evalfSetting);
