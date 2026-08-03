@@ -4,6 +4,7 @@
 import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
 import {
   checkMathSymbolicWithStructure,
+  checkMathEquivalentEquation,
   checkAbsolutePrecision,
   checkRelativePrecision,
   containsError,
@@ -274,6 +275,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
     if (textArea.classList.contains('type-TF')) return 'TF';
     if (textArea.classList.contains('type-M')) return 'M';
     if (textArea.classList.contains('type-MV')) return 'MV';
+    if (textArea.classList.contains('type-MEQ')) return 'MEQ';
     if (textArea.classList.contains('type-MR')) return 'MR';
     if (textArea.classList.contains('type-MNR')) return 'MNR';
     if (textArea.classList.contains('type-MAP')) return 'MAP';
@@ -355,6 +357,14 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
         }
         catch (e) {
           console.error('Error parsing math input for MV checking: ', e);
+          return false;
+        }
+      case 'MEQ':
+        try {
+          return checkMathEquivalentEquation(stripped, correctAnswer);
+        }
+        catch (e) {
+          console.error('Error parsing math input for MEQ checking: ', e);
           return false;
         }
       case 'MR':
@@ -553,7 +563,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
         }
         if (mathField) {
           const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
-          if (mathField.classList.contains('type-M') || mathField.classList.contains('type-MV')) {
+          if (mathField.classList.contains('type-M') || mathField.classList.contains('type-MV') || mathField.classList.contains('type-MEQ')) {
             // for M type, we want to show just the answers, separated by a mathematical or
             const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => {
               const normalized = ans.trim().replace(/\\;/g, ';');
