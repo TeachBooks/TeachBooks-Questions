@@ -283,8 +283,8 @@ function canonicalStructure(expression) {
 function isSymbolicallyEqual(studentAnswer, correctAnswer) {
   const studentExpr = ce.parse(studentAnswer);
   const correctExpr = ce.parse(correctAnswer);
-  const studentEquation = studentExpr.head === "Equal";
-  const correctEquation = correctExpr.head === "Equal";
+  const studentEquation = studentExpr.operator === "Equal";
+  const correctEquation = correctExpr.operator === "Equal";
 
   if (studentEquation && correctEquation) {
     const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
@@ -314,12 +314,12 @@ export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
     .map((ans) => ans.trim().replace(/\\;/g, ";"));
 
   const studentExpr = ce.parse(strippedStudent);
-  const studentIsEquation = studentExpr.head === "Equal";
+  const studentIsEquation = studentExpr.operator === "Equal";
 
   for (const ans of correctAnswers) {
     if (!ans) continue;
     const correctExpr = ce.parse(ans);
-    const correctIsEquation = correctExpr.head === "Equal";
+    const correctIsEquation = correctExpr.operator === "Equal";
 
     if (studentIsEquation && correctIsEquation) {
       // For equations: accept any algebraically equivalent rearrangement by comparing

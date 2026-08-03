@@ -500,16 +500,16 @@ const ce = new ComputeEngine();
             }
             const studentExpr = ce.parse(stripped);
             const correctExpr = ce.parse(ans);
-            const studentEquation = studentExpr.head === 'Equal';
-            const correctEquation = correctExpr.head === 'Equal';
+            const studentEquation = studentExpr.operator === 'Equal';
+            const correctEquation = correctExpr.operator === 'Equal';
             if (studentEquation && correctEquation) {
               const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
               const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+              const evalCorrectFlipped = ce.box(["Subtract", correctExpr.ops[1], correctExpr.ops[0]]).simplify();
               if (evalStudentExpr.isEqual(evalCorrectExpr)) {
                 correctlyAnswered = true;
               }
-              const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
-              if (negateStudent.isEqual(evalCorrectExpr)) {
+              if (evalStudentExpr.isEqual(evalCorrectFlipped)) {
                 correctlyAnswered = true;
               }
             } else if (!studentEquation && !correctEquation) {
