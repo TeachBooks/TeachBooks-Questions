@@ -289,11 +289,11 @@ function isSymbolicallyEqual(studentAnswer, correctAnswer) {
   if (studentEquation && correctEquation) {
     const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
     const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+    const evalCorrectFlipped = ce.box(["Subtract", correctExpr.ops[1], correctExpr.ops[0]]).simplify();
     if (evalStudentExpr.isEqual(evalCorrectExpr)) {
       return true;
     }
-    const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
-    return negateStudent.isEqual(evalCorrectExpr);
+    return evalStudentExpr.isEqual(evalCorrectFlipped);
   }
 
   if (!studentEquation && !correctEquation) {
@@ -325,12 +325,16 @@ export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
       // For equations: accept any algebraically equivalent rearrangement by comparing
       // polynomial numerators of LHS - RHS, clearing any rational denominator.
       // e.g. "E/m = c^2" and "E = m*c^2" both yield numerator "E - m*c^2".
+      // Also accept the sides-swapped form (e.g. "0 = w_B" matches "w_B = 0") by
+      // computing RHS - LHS for the correct answer and checking against that too.
       const diffStudent = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
       const diffCorrect = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+      const diffCorrectFlipped = ce.box(["Subtract", correctExpr.ops[1], correctExpr.ops[0]]).simplify();
       const numStudent = diffStudent.numerator ?? diffStudent;
       const numCorrect = diffCorrect.numerator ?? diffCorrect;
+      const numCorrectFlipped = diffCorrectFlipped.numerator ?? diffCorrectFlipped;
       if (numStudent.isEqual(numCorrect)) return true;
-      if (ce.box(["Negate", numStudent]).simplify().isEqual(numCorrect)) return true;
+      if (numStudent.isEqual(numCorrectFlipped)) return true;
     } else if (!studentIsEquation && !correctIsEquation) {
       // For non-equations: require symbolic equality AND matching variable-role structure.
       if (!isSymbolicallyEqual(strippedStudent, ans)) {
