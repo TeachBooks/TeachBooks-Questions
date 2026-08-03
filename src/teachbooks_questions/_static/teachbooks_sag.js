@@ -241,7 +241,7 @@ const ce = new ComputeEngine();
         }
         if (mathField) {
           const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
-          if (mathField.classList.contains('type-M') || mathField.classList.contains('type-MS')) {
+          if (mathField.classList.contains('type-M') || mathField.classList.contains('type-MV')) {
             // for M type, we want to show just the first correct answer
             const correctAnswers = answerSpan.textContent.trim().split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
             mathField.value = formatEvalfDisplay(correctAnswers[0] || '', evalfSetting);
@@ -442,7 +442,7 @@ const ce = new ComputeEngine();
     if (inputOrMathField.classList.contains('type-TI')) return 'TI';
     if (inputOrMathField.classList.contains('type-TF')) return 'TF';
     if (inputOrMathField.classList.contains('type-M')) return 'M';
-    if (inputOrMathField.classList.contains('type-MS')) return 'MS';
+    if (inputOrMathField.classList.contains('type-MV')) return 'MV';
     if (inputOrMathField.classList.contains('type-MR')) return 'MR';
     if (inputOrMathField.classList.contains('type-MNR')) return 'MNR';
     if (inputOrMathField.classList.contains('type-MAP')) return 'MAP';
@@ -524,12 +524,12 @@ const ce = new ComputeEngine();
           console.error('Error parsing math input: ', e);
           return false;
         }
-      case 'MS':
+      case 'MV':
         try {
           return checkMathSymbolicWithStructure(stripped, correctAnswer);
         }
         catch (e) {
-          console.error('Error parsing math input for MS checking: ', e);
+          console.error('Error parsing math input for MV checking: ', e);
           return false;
         }
       case 'MR':
