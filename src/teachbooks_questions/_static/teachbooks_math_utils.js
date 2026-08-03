@@ -241,3 +241,90 @@ export function containsError(node) {
   // Primitive values have no nested error expression
   return false;
 }
+
+function canonicalizeMathJson(node) {
+  if (Array.isArray(node)) {
+    if (node.length === 0) return node;
+    const [head, ...ops] = node;
+    const normalizedOps = ops.map((op) => canonicalizeMathJson(op));
+
+    if (head === "Add" || head === "Multiply") {
+      const flattened = [];
+      for (const op of normalizedOps) {
+        if (Array.isArray(op) && op[0] === head) {
+          flattened.push(...op.slice(1));
+        } else {
+          flattened.push(op);
+        }
+      }
+      flattened.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+      return [head, ...flattened];
+    }
+
+    return [head, ...normalizedOps];
+  }
+
+  if (node !== null && typeof node === "object") {
+    const normalizedObject = {};
+    Object.keys(node).sort().forEach((key) => {
+      normalizedObject[key] = canonicalizeMathJson(node[key]);
+    });
+    return normalizedObject;
+  }
+
+  return node;
+}
+
+function canonicalStructure(expression) {
+  const parsed = ce.parse(expression).simplify();
+  return canonicalizeMathJson(parsed.json);
+}
+
+function isSymbolicallyEqual(studentAnswer, correctAnswer) {
+  const studentExpr = ce.parse(studentAnswer);
+  const correctExpr = ce.parse(correctAnswer);
+  const studentEquation = studentExpr.head === "Equal";
+  const correctEquation = correctExpr.head === "Equal";
+
+  if (studentEquation && correctEquation) {
+    const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
+    const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+    if (evalStudentExpr.isEqual(evalCorrectExpr)) {
+      return true;
+    }
+    const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
+    return negateStudent.isEqual(evalCorrectExpr);
+  }
+
+  if (!studentEquation && !correctEquation) {
+    return studentExpr.isEqual(correctExpr);
+  }
+
+  return false;
+}
+
+export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
+  const strippedStudent = String(studentAnswer ?? "").trim();
+  if (strippedStudent === "") {
+    return false;
+  }
+
+  const correctAnswers = String(correctAnswer)
+    .split(/(?<!\\);/)
+    .map((ans) => ans.trim().replace(/\\;/g, ";"));
+
+  for (const ans of correctAnswers) {
+    if (!ans) continue;
+    if (!isSymbolicallyEqual(strippedStudent, ans)) {
+      continue;
+    }
+
+    const studentStructure = canonicalStructure(strippedStudent);
+    const correctStructure = canonicalStructure(ans);
+    if (JSON.stringify(studentStructure) === JSON.stringify(correctStructure)) {
+      return true;
+    }
+  }
+
+  return false;
+}
