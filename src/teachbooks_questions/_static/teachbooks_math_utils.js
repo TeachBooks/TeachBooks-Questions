@@ -324,6 +324,16 @@ export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
     if (JSON.stringify(studentStructure) === JSON.stringify(correctStructure)) {
       return true;
     }
+
+    // Also accept the flipped equation (b = a when correct is a = b)
+    const correctExpr = ce.parse(ans);
+    if (correctExpr.head === "Equal") {
+      const flippedCorrect = ce.box(["Equal", correctExpr.ops[1], correctExpr.ops[0]]).toLatex();
+      const flippedStructure = canonicalStructure(flippedCorrect);
+      if (JSON.stringify(studentStructure) === JSON.stringify(flippedStructure)) {
+        return true;
+      }
+    }
   }
 
   return false;
