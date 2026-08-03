@@ -303,37 +303,6 @@ function isSymbolicallyEqual(studentAnswer, correctAnswer) {
   return false;
 }
 
-export function checkMathEquivalentEquation(studentAnswer, correctAnswer) {
-  const strippedStudent = String(studentAnswer ?? "").trim();
-  if (strippedStudent === "") return false;
-
-  const correctAnswers = String(correctAnswer)
-    .split(/(?<!\\);/)
-    .map((ans) => ans.trim().replace(/\\;/g, ";"));
-
-  for (const ans of correctAnswers) {
-    if (!ans) continue;
-    const studentExpr = ce.parse(strippedStudent);
-    const correctExpr = ce.parse(ans);
-    if (studentExpr.head !== "Equal" || correctExpr.head !== "Equal") continue;
-
-    // Compute LHS - RHS for each equation and simplify.
-    // e.g. "E/m - c^2" simplifies to "(E - m*c^2)/m", making the relationship explicit.
-    const diffStudent = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
-    const diffCorrect = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
-
-    // Compare polynomial numerators after clearing any rational denominator.
-    // This means "E/m = c^2" and "E = m*c^2" both yield numerator "E - m*c^2".
-    const numStudent = diffStudent.numerator ?? diffStudent;
-    const numCorrect = diffCorrect.numerator ?? diffCorrect;
-
-    if (numStudent.isEqual(numCorrect)) return true;
-    if (ce.box(["Negate", numStudent]).simplify().isEqual(numCorrect)) return true;
-  }
-
-  return false;
-}
-
 export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
   const strippedStudent = String(studentAnswer ?? "").trim();
   if (strippedStudent === "") {
@@ -344,24 +313,32 @@ export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
     .split(/(?<!\\);/)
     .map((ans) => ans.trim().replace(/\\;/g, ";"));
 
+  const studentExpr = ce.parse(strippedStudent);
+  const studentIsEquation = studentExpr.head === "Equal";
+
   for (const ans of correctAnswers) {
     if (!ans) continue;
-    if (!isSymbolicallyEqual(strippedStudent, ans)) {
-      continue;
-    }
-
-    const studentStructure = canonicalStructure(strippedStudent);
-    const correctStructure = canonicalStructure(ans);
-    if (JSON.stringify(studentStructure) === JSON.stringify(correctStructure)) {
-      return true;
-    }
-
-    // Also accept the flipped equation (b = a when correct is a = b)
     const correctExpr = ce.parse(ans);
-    if (correctExpr.head === "Equal") {
-      const flippedCorrect = ce.box(["Equal", correctExpr.ops[1], correctExpr.ops[0]]).toLatex();
-      const flippedStructure = canonicalStructure(flippedCorrect);
-      if (JSON.stringify(studentStructure) === JSON.stringify(flippedStructure)) {
+    const correctIsEquation = correctExpr.head === "Equal";
+
+    if (studentIsEquation && correctIsEquation) {
+      // For equations: accept any algebraically equivalent rearrangement by comparing
+      // polynomial numerators of LHS - RHS, clearing any rational denominator.
+      // e.g. "E/m = c^2" and "E = m*c^2" both yield numerator "E - m*c^2".
+      const diffStudent = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
+      const diffCorrect = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+      const numStudent = diffStudent.numerator ?? diffStudent;
+      const numCorrect = diffCorrect.numerator ?? diffCorrect;
+      if (numStudent.isEqual(numCorrect)) return true;
+      if (ce.box(["Negate", numStudent]).simplify().isEqual(numCorrect)) return true;
+    } else if (!studentIsEquation && !correctIsEquation) {
+      // For non-equations: require symbolic equality AND matching variable-role structure.
+      if (!isSymbolicallyEqual(strippedStudent, ans)) {
+        continue;
+      }
+      const studentStructure = canonicalStructure(strippedStudent);
+      const correctStructure = canonicalStructure(ans);
+      if (JSON.stringify(studentStructure) === JSON.stringify(correctStructure)) {
         return true;
       }
     }

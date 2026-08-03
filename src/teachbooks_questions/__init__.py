@@ -687,8 +687,8 @@ class QuestionDirective(SphinxDirective):
 
         # Find option markers and validate mode tokens early.
         allowed_modes = {
-            "T", "TI", "TF", "M", "MV", "MEQ", "MR", "MNR", "MAP", "MRP",
-            "ME", "MRE", "MNRE", "MAPE", "MRPE", "MEQE", "DS",
+            "T", "TI", "TF", "M", "MV", "MR", "MNR", "MAP", "MRP",
+            "ME", "MRE", "MNRE", "MAPE", "MRPE", "MVE", "DS",
         }
         option_starts = []
         for i, line in enumerate(options_raw):
@@ -745,8 +745,8 @@ class QuestionDirective(SphinxDirective):
                 f"Malformed mode '{raw_option_type}' at line {self.lineno} in {self.env.docname}."
             )
 
-        allowed_base_modes = {"T", "TI", "TF", "M", "MV", "MEQ", "MR", "MNR", "MAP", "MRP", "DS"}
-        e_modes = {"ME", "MRE", "MNRE", "MAPE", "MRPE", "MEQE"}
+        allowed_base_modes = {"T", "TI", "TF", "M", "MV", "MR", "MNR", "MAP", "MRP", "DS"}
+        e_modes = {"ME", "MRE", "MNRE", "MAPE", "MRPE", "MVE"}
 
         answer_str_raw = first_line.split("[")[1].split("]")[0].strip()
         if raw_option_type in e_modes:
