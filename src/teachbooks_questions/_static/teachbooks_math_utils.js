@@ -1,6 +1,6 @@
 // Shared math utility helpers for TeachBooks question scripts.
 
-import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.126.1";
 
 const ce = new ComputeEngine();
 
@@ -239,5 +239,160 @@ export function containsError(node) {
   }
 
   // Primitive values have no nested error expression
+  return false;
+}
+
+function canonicalizeMathJson(node) {
+  if (Array.isArray(node)) {
+    if (node.length === 0) return node;
+    const [head, ...ops] = node;
+
+    const normalizedOps = ops.map((op) => canonicalizeMathJson(op));
+
+    if (head === "Add" || head === "Multiply") {
+      const flattened = [];
+      for (const op of normalizedOps) {
+        if (Array.isArray(op) && op[0] === head) {
+          flattened.push(...op.slice(1));
+        } else {
+          flattened.push(op);
+        }
+      }
+      flattened.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+      return [head, ...flattened];
+    }
+
+    return [head, ...normalizedOps];
+  }
+
+  if (node !== null && typeof node === "object") {
+    const normalizedObject = {};
+    Object.keys(node).sort().forEach((key) => {
+      normalizedObject[key] = canonicalizeMathJson(node[key]);
+    });
+    return normalizedObject;
+  }
+
+  return node;
+}
+
+function areCanonicalStructuresEqual(left, right) {
+  let leftExpression;
+  let rightExpression;
+  try {
+    leftExpression = ce.box(left);
+    rightExpression = ce.box(right);
+    if (leftExpression.isNumber || rightExpression.isNumber) {
+      return leftExpression.isNumber && rightExpression.isNumber && leftExpression.isEqual(rightExpression);
+    }
+  } catch (error) {
+  }
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+      return false;
+    }
+    return left.every((value, index) => areCanonicalStructuresEqual(value, right[index]));
+  }
+
+  if (left !== null && typeof left === "object" || right !== null && typeof right === "object") {
+    if (left === null || right === null || typeof left !== "object" || typeof right !== "object") {
+      return false;
+    }
+    const leftKeys = Object.keys(left).sort();
+    const rightKeys = Object.keys(right).sort();
+    return leftKeys.length === rightKeys.length
+      && leftKeys.every((key, index) => key === rightKeys[index]
+        && areCanonicalStructuresEqual(left[key], right[key]));
+  }
+
+  return left === right;
+}
+
+function canonicalStructure(expression) {
+  const parsed = ce.parse(expression).simplify();
+  return canonicalizeMathJson(parsed.json);
+}
+
+function isSymbolicallyEqual(studentAnswer, correctAnswer) {
+  const studentExpr = ce.parse(studentAnswer);
+  const correctExpr = ce.parse(correctAnswer);
+  const studentEquation = studentExpr.operator === "Equal";
+  const correctEquation = correctExpr.operator === "Equal";
+
+  if (studentEquation && correctEquation) {
+    const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
+    const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+    const evalCorrectFlipped = ce.box(["Subtract", correctExpr.ops[1], correctExpr.ops[0]]).simplify();
+    if (evalStudentExpr.isEqual(evalCorrectExpr)) {
+      return true;
+    }
+    return evalStudentExpr.isEqual(evalCorrectFlipped);
+  }
+
+  if (!studentEquation && !correctEquation) {
+    return studentExpr.isEqual(correctExpr);
+  }
+
+  return false;
+}
+
+function areNonzeroScalarMultiples(left, right) {
+  try {
+    const quotient = ce.box(["Divide", left, right]).simplify();
+    const value = quotient.valueOf();
+    return quotient.isNumber && typeof value === "number" && Number.isFinite(value) && value !== 0;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
+  const strippedStudent = String(studentAnswer ?? "").trim();
+  if (strippedStudent === "") {
+    return false;
+  }
+
+  const correctAnswers = String(correctAnswer)
+    .split(/(?<!\\);/)
+    .map((ans) => ans.trim().replace(/\\;/g, ";"));
+
+  const studentExpr = ce.parse(strippedStudent);
+  const studentIsEquation = studentExpr.operator === "Equal";
+
+  for (const ans of correctAnswers) {
+    if (!ans) continue;
+    const correctExpr = ce.parse(ans);
+    const correctIsEquation = correctExpr.operator === "Equal";
+
+    if (studentIsEquation && correctIsEquation) {
+      // For equations: accept any algebraically equivalent rearrangement by comparing
+      // polynomial numerators of LHS - RHS, clearing any rational denominator.
+      // e.g. "E/m = c^2" and "E = m*c^2" both yield numerator "E - m*c^2".
+      // Also accept the sides-swapped form (e.g. "0 = w_B" matches "w_B = 0") by
+      // computing RHS - LHS for the correct answer and checking against that too.
+      const diffStudent = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
+      const diffCorrect = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
+      const diffCorrectFlipped = ce.box(["Subtract", correctExpr.ops[1], correctExpr.ops[0]]).simplify();
+      const numStudent = diffStudent.numerator ?? diffStudent;
+      const numCorrect = diffCorrect.numerator ?? diffCorrect;
+      const numCorrectFlipped = diffCorrectFlipped.numerator ?? diffCorrectFlipped;
+      if (numStudent.isEqual(numCorrect)) return true;
+      if (numStudent.isEqual(numCorrectFlipped)) return true;
+      if (areNonzeroScalarMultiples(numStudent, numCorrect)) return true;
+      if (areNonzeroScalarMultiples(numStudent, numCorrectFlipped)) return true;
+    } else if (!studentIsEquation && !correctIsEquation) {
+      // For non-equations: require symbolic equality AND matching variable-role structure.
+      if (!isSymbolicallyEqual(strippedStudent, ans)) {
+        continue;
+      }
+      const studentStructure = canonicalStructure(strippedStudent);
+      const correctStructure = canonicalStructure(ans);
+      if (areCanonicalStructuresEqual(studentStructure, correctStructure)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }

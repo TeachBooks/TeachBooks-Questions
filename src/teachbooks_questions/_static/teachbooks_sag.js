@@ -1,7 +1,8 @@
 // Functionality for short-answer gaps questions in Teachbooks
 
-import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.126.1";
 import {
+  checkMathSymbolicWithStructure,
   checkAbsolutePrecision,
   checkRelativePrecision,
   containsError,
@@ -487,36 +488,8 @@ const ce = new ComputeEngine();
         }
         return false; // If no correct answer matched, return false
       case 'M':
-        // convert both to Expressions and compare
         try {
-          // loop over correct answers split at unescaped ';' to allow for multiple correct answers, and return true if any of them matches the student answer
-          const correctAnswersM = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
-          let correctlyAnswered = false;
-          for (let ans of correctAnswersM) {
-            if (correctlyAnswered) {
-              break; // If we've already found a correct answer, no need to check further
-            }
-            const studentExpr = ce.parse(stripped);
-            const correctExpr = ce.parse(ans);
-            const studentEquation = studentExpr.head === 'Equal';
-            const correctEquation = correctExpr.head === 'Equal';
-            if (studentEquation && correctEquation) {
-              const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
-              const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
-              if (evalStudentExpr.isEqual(evalCorrectExpr)) {
-                correctlyAnswered = true;
-              }
-              const negateStudent = ce.box(["Negate", evalStudentExpr]).simplify();
-              if (negateStudent.isEqual(evalCorrectExpr)) {
-                correctlyAnswered = true;
-              }
-            } else if (!studentEquation && !correctEquation) {
-              if (studentExpr.isEqual(correctExpr)) {
-                correctlyAnswered = true;
-              }
-            }
-          }
-          return correctlyAnswered;
+          return checkMathSymbolicWithStructure(stripped, correctAnswer);
         }
         catch (e) {
           console.error('Error parsing math input: ', e);
