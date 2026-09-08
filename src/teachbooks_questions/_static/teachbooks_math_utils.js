@@ -337,6 +337,16 @@ function isSymbolicallyEqual(studentAnswer, correctAnswer) {
   return false;
 }
 
+function areNonzeroScalarMultiples(left, right) {
+  try {
+    const quotient = ce.box(["Divide", left, right]).simplify();
+    const value = quotient.valueOf();
+    return quotient.isNumber && typeof value === "number" && Number.isFinite(value) && value !== 0;
+  } catch (error) {
+    return false;
+  }
+}
+
 export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
   const strippedStudent = String(studentAnswer ?? "").trim();
   if (strippedStudent === "") {
@@ -369,6 +379,8 @@ export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
       const numCorrectFlipped = diffCorrectFlipped.numerator ?? diffCorrectFlipped;
       if (numStudent.isEqual(numCorrect)) return true;
       if (numStudent.isEqual(numCorrectFlipped)) return true;
+      if (areNonzeroScalarMultiples(numStudent, numCorrect)) return true;
+      if (areNonzeroScalarMultiples(numStudent, numCorrectFlipped)) return true;
     } else if (!studentIsEquation && !correctIsEquation) {
       // For non-equations: require symbolic equality AND matching variable-role structure.
       if (!isSymbolicallyEqual(strippedStudent, ans)) {
