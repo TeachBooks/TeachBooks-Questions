@@ -246,6 +246,7 @@ function canonicalizeMathJson(node) {
   if (Array.isArray(node)) {
     if (node.length === 0) return node;
     const [head, ...ops] = node;
+
     const normalizedOps = ops.map((op) => canonicalizeMathJson(op));
 
     if (head === "Add" || head === "Multiply") {
@@ -273,6 +274,39 @@ function canonicalizeMathJson(node) {
   }
 
   return node;
+}
+
+function areCanonicalStructuresEqual(left, right) {
+  let leftExpression;
+  let rightExpression;
+  try {
+    leftExpression = ce.box(left);
+    rightExpression = ce.box(right);
+    if (leftExpression.isNumber || rightExpression.isNumber) {
+      return leftExpression.isNumber && rightExpression.isNumber && leftExpression.isEqual(rightExpression);
+    }
+  } catch (error) {
+  }
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+      return false;
+    }
+    return left.every((value, index) => areCanonicalStructuresEqual(value, right[index]));
+  }
+
+  if (left !== null && typeof left === "object" || right !== null && typeof right === "object") {
+    if (left === null || right === null || typeof left !== "object" || typeof right !== "object") {
+      return false;
+    }
+    const leftKeys = Object.keys(left).sort();
+    const rightKeys = Object.keys(right).sort();
+    return leftKeys.length === rightKeys.length
+      && leftKeys.every((key, index) => key === rightKeys[index]
+        && areCanonicalStructuresEqual(left[key], right[key]));
+  }
+
+  return left === right;
 }
 
 function canonicalStructure(expression) {
@@ -342,7 +376,7 @@ export function checkMathSymbolicWithStructure(studentAnswer, correctAnswer) {
       }
       const studentStructure = canonicalStructure(strippedStudent);
       const correctStructure = canonicalStructure(ans);
-      if (JSON.stringify(studentStructure) === JSON.stringify(correctStructure)) {
+      if (areCanonicalStructuresEqual(studentStructure, correctStructure)) {
         return true;
       }
     }
