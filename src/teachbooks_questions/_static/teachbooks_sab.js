@@ -273,7 +273,6 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
     if (textArea.classList.contains('type-TI')) return 'TI';
     if (textArea.classList.contains('type-TF')) return 'TF';
     if (textArea.classList.contains('type-M')) return 'M';
-    if (textArea.classList.contains('type-MV')) return 'MV';
     if (textArea.classList.contains('type-MR')) return 'MR';
     if (textArea.classList.contains('type-MNR')) return 'MNR';
     if (textArea.classList.contains('type-MAP')) return 'MAP';
@@ -314,47 +313,11 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
         }
         return false; // If no correct answer matched, return false
       case 'M':
-        // convert both to Expressions and compare
-        try {
-          // loop over correct answers split at unescaped ';' to allow for multiple correct answers, and return true if any of them matches the student answer
-          const correctAnswersM = correctAnswer.split(/(?<!\\);/).map(ans => ans.trim().replace(/\\;/g, ';'));
-          let correctlyAnswered = false;
-          for (let ans of correctAnswersM) {
-            if (correctlyAnswered) {
-              break; // If we've already found a correct answer, no need to check further
-            }
-            const studentExpr = ce.parse(stripped);
-            const correctExpr = ce.parse(ans);
-            const studentEquation = studentExpr.operator === 'Equal';
-            const correctEquation = correctExpr.operator === 'Equal';
-            if (studentEquation && correctEquation) {
-              const evalStudentExpr = ce.box(["Subtract", studentExpr.ops[0], studentExpr.ops[1]]).simplify();
-              const evalCorrectExpr = ce.box(["Subtract", correctExpr.ops[0], correctExpr.ops[1]]).simplify();
-              const evalCorrectFlipped = ce.box(["Subtract", correctExpr.ops[1], correctExpr.ops[0]]).simplify();
-              if (evalStudentExpr.isEqual(evalCorrectExpr)) {
-                correctlyAnswered = true;
-              }
-              if (evalStudentExpr.isEqual(evalCorrectFlipped)) {
-                correctlyAnswered = true;
-              }
-            } else if (!studentEquation && !correctEquation) {
-              if (studentExpr.isEqual(correctExpr)) {
-                correctlyAnswered = true;
-              }
-            }
-          }
-          return correctlyAnswered;
-        }
-        catch (e) {
-          console.error('Error parsing math input: ', e);
-          return false;
-        }
-      case 'MV':
         try {
           return checkMathSymbolicWithStructure(stripped, correctAnswer);
         }
         catch (e) {
-          console.error('Error parsing math input for MV checking: ', e);
+          console.error('Error parsing math input: ', e);
           return false;
         }
       case 'MR':
@@ -553,7 +516,7 @@ function formatRangeEvalfDisplay(intervalExpression, evalfSetting) {
         }
         if (mathField) {
           const evalfSetting = mathField.dataset ? mathField.dataset.evalf : null;
-          if (mathField.classList.contains('type-M') || mathField.classList.contains('type-MV')) {
+          if (mathField.classList.contains('type-M')) {
             // for M type, we want to show just the answers, separated by a mathematical or
             const correctAnswers = answerSection.textContent.trim().split(/(?<!\\);/).map(ans => {
               const normalized = ans.trim().replace(/\\;/g, ';');
