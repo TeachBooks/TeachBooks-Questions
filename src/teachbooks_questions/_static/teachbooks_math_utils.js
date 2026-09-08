@@ -1,6 +1,6 @@
 // Shared math utility helpers for TeachBooks question scripts.
 
-import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.126.1";
 
 const ce = new ComputeEngine();
 
