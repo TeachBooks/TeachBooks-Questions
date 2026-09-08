@@ -1,7 +1,7 @@
 // Functionality for short-answer block questions in Teachbooks
 
 // Define the compute engine for math questions
-import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.55.6";
+import { ComputeEngine } from "https://esm.run/@cortex-js/compute-engine@0.126.1";
 import {
   checkMathSymbolicWithStructure,
   checkAbsolutePrecision,
