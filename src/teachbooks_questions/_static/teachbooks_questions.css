@@ -148,12 +148,6 @@ div.multiple-choice section.question-options div.sd-card:has(div.sd-card-body:ho
     background-color: var(--question-red-hover);
 }
 
-/* to make sure any admonition within the card is styled correctly */
-/* add a background */
-div.multiple-choice section.question-options div.sd-card div.wrap-admonition {
-    background-color: var(--pst-color-background);
-}
-
 /* Spacing above options and buttons sections */
 section.question-options,
 section.question-buttons {
