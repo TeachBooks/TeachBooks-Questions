@@ -7,9 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // add the border radius to the wrap based on the admonition style
       const style = window.getComputedStyle(admonition);
       wrap.style.borderRadius = style.borderRadius;
+      // add the backrgound to the wrapper
+      wrap.style.backgroundColor = 'var(--pst-color-background)';
       // move the admonition inside the wrap 
       admonition.parentNode.insertBefore(wrap, admonition);
       wrap.appendChild(admonition);
-      
     });
 });
