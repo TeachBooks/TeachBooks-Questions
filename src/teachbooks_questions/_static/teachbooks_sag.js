@@ -37,6 +37,14 @@ const ce = new ComputeEngine();
     return /^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(trimmed);
   }
 
+  function isExactlyRepresented(expression, approximation) {
+    try {
+      return ce.parse(expression).isEqual(ce.parse(approximation));
+    } catch (error) {
+      return false;
+    }
+  }
+
   function formatEvalfDisplay(expression, evalfSetting, exactFirst = true) {
     const trimmed = String(expression || '').trim();
     if (!trimmed || isPlainFloatString(trimmed)) {
@@ -54,6 +62,11 @@ const ce = new ComputeEngine();
         return trimmed;
       }
       const approxValue = Number(numeric).toPrecision(digits);
+      if (isExactlyRepresented(trimmed, approxValue)) {
+        return exactFirst
+          ? `${trimmed} = ${approxValue}`
+          : `${approxValue} = ${trimmed}`;
+      }
       return exactFirst
         ? `${trimmed} \\approx ${approxValue}`
         : `${approxValue} \\approx ${trimmed}`;
