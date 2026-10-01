@@ -55,6 +55,9 @@ class QuestionDirective(SphinxDirective):
     QUESTION_STRUCTURE_PREFIX = "? "
     SEPARATOR = "---"
     GENERAL_FEEDBACK_SEPARATOR = "^^^"
+
+    # Config updated flag
+    CONFIG_UPDATED = False
     
     has_content = True
     required_arguments = 0
@@ -72,6 +75,35 @@ class QuestionDirective(SphinxDirective):
     }
 
     def run(self) -> List[Node]:
+        """Get the config"""
+        config = self.env.app.config
+        if "teachbooks_questions" in config:
+            TB_Q_opts = config["teachbooks_questions"]
+        else:
+            TB_Q_opts = {}
+        """Override default feedbacks if given and not performed yet"""
+        if not self.CONFIG_UPDATED:
+            if "feedbacks" in TB_Q_opts.keys():
+                for question_type in self.FEEDBACKS.keys():
+                    if question_type != "no-input" and question_type in TB_Q_opts["feedbacks"].keys():
+                        for variant in self.FEEDBACKS[question_type].keys():
+                            if variant in TB_Q_opts["feedbacks"][question_type].keys():
+                                for key in TB_Q_opts["feedbacks"][question_type][variant].keys():
+                                    if key in self.FEEDBACKS[question_type][variant].keys():
+                                        val = TB_Q_opts["feedbacks"][question_type][variant][key]
+                                        if isinstance(val,str):
+                                            val = val.split("\n")
+                                        self.FEEDBACKS[question_type][variant][key] = val
+                                        self.CONFIG_UPDATED = True
+            if "columns" in TB_Q_opts.keys():
+                for question_type in self.COLUMNS.keys():
+                    if question_type in TB_Q_opts["columns"].keys():
+                        for variant in self.COLUMNS[question_type].keys():
+                            if variant in TB_Q_opts["columns"][question_type].keys():
+                                self.COLUMNS[question_type][variant] = TB_Q_opts["columns"][question_type][variant]
+                                self.CONFIG_UPDATED = True
+
+
         """Main directive handler."""
         # Validate and get question type and variant
         question_type = self.options.get("type", "multiple-choice")
@@ -1349,6 +1381,9 @@ def _find_last_index(lst: List[str], value: str, skip: int = 0) -> int:
 
 
 def setup(app) -> Dict[str, Any]:
+    """Setup config values"""
+    app.add_config_value("teachbooks_questions",{},'html',[dict])
+        
     """Setup function for Sphinx extension."""
     app.add_directive("question", QuestionDirective)
     app.add_node(question_node, html=(visit_question_node, depart_question_node))
