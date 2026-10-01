@@ -78,7 +78,7 @@ sphinx:
           no-submit: "1 1 1 1"
 ```
 
-Only non-default values can be provided, for example to change one feedback, provide:
+Only non-default values should be provided, for example to change one feedback, provide:
 
 ```
 sphinx:
