@@ -32,13 +32,67 @@ teachbooks-questions
 In your `_config.yml` file, add the extension to the list of Sphinx extra extensions:
 ```
 sphinx: 
-    extra_extensions:
-        - teachbooks_questions
+  extra_extensions:
+      - teachbooks_questions
 ```
 
 ## Configuration
 
-In the current version no Sphinx configuration options are exposed currently.
+The following Sphinx configuration options are exposed currently, with the following default values:
+
+```
+sphinx:
+  config:
+    teachbooks_questions:
+      feedbacks:
+        multiple-choice:
+          single-select:
+            true: ["Correct!"]
+            false: ["Incorrect."]
+          multiple-select:
+            true: ["Correct!"]
+            false: ["Incorrect."]
+            correct: ["Well done!"]
+            incorrect : ["Try again! You selected at least one incorrect option."]
+            missed: ["Try again! You missed at least one correct option."]
+            incorrect-missed: ["Try again! You selected at least one incorrect option and missed at least one correct option."]
+        short-answer:
+          blocks:
+            true: ["Correct!"]
+            false: ["Incorrect."]
+          gaps:
+            true: ["Correct!"]
+            false: ["Incorrect."]
+            correct: ["You filled in all gaps correctly."]
+            incorrect: ["You filled in none of the gaps correctly."]
+            mixed: ["You filled in some gaps correctly, but also some incorrectly."]
+            show-answer: ["The correct answers are shown above."]
+      columns:
+        multiple-choice:
+          single-select: "1 1 2 2"
+          multiple-select: "1 1 2 2"
+        short-answer:
+          blocks: "1 1 1 1"
+          gaps: "1 1 1 1"
+        no-input:
+          no-submit: "1 1 1 1"
+```
+
+Only non-default values can be provided, for example to change one feedback, provide:
+
+```
+sphinx:
+  config:
+  teachbooks_questions:
+    feedbacks:
+      multiple-choice:
+      multiple-select:
+        correct: "Well done, you got everything right!"
+```
+
+For the `feedbacks`, the values can either be a single string or a list of strings.
+
+For the `columns`, these should match with the specifications given in [Grids](https://sphinx-design.readthedocs.io/en/latest/grids.html), second paragraph.
 
 ## Usage
 
