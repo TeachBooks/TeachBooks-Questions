@@ -86,8 +86,8 @@ sphinx:
   teachbooks_questions:
     feedbacks:
       multiple-choice:
-      multiple-select:
-        correct: "Well done, you got everything right!"
+        multiple-select:
+          correct: "Well done, you got everything right!"
 ```
 
 For the `feedbacks`, the values can either be a single string or a list of strings.
