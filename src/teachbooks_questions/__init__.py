@@ -863,6 +863,25 @@ class QuestionDirective(SphinxDirective):
             "show_answer_feedback": show_fb,
         }
 
+    def _add_card_slots(self, section: Node, header_hidden: List[bool] | None = None) -> None:
+        """Add empty card slots without relying on sphinx-design's separator syntax."""
+        cards = [
+            container for container in section.findall(nodes.container)
+            if "sd-card" in container.get("classes", [])
+            and "option" in container.get("classes", [])
+        ]
+        for index, card in enumerate(cards):
+            if header_hidden is not None:
+                classes = ["sd-card-header"]
+                if header_hidden[index]:
+                    classes.append("hidden")
+                card.insert(0, nodes.container(
+                    is_div=True, design_component="card-header", classes=classes
+                ))
+            card += nodes.container(
+                is_div=True, design_component="card-footer", classes=["sd-card-footer"]
+            )
+
     def _render_short_answer_cards(self, node: Node, node_id: str, options: List[Dict], columns: str) -> None:
         """Render short-answer options as cards."""
         # Create card markup
@@ -871,16 +890,13 @@ class QuestionDirective(SphinxDirective):
             ":gutter: 3",
             "",
         ]
-        for option in options:
-            label = option["label"]
+        for _ in options:
             cards_markup.append(":::{grid-item-card}")
             cards_markup.append(":shadow: lg")
             cards_markup.append(":width: 100%")
             cards_markup.append(":class-card: option")
             cards_markup.append(":class-body: input")
-            if label == [""]:
-                cards_markup.append(":class-header: hidden")
-            cards_markup.extend(["^^^", "+++", ":::"])
+            cards_markup.extend(["", ":::"])
         cards_markup.append("::::")
 
         # Render cards
@@ -890,6 +906,7 @@ class QuestionDirective(SphinxDirective):
         )
         self.state.nested_parse(cards_markup, self.content_offset, options_section)
         node += options_section
+        self._add_card_slots(options_section, [option["label"] == [""] for option in options])
 
         # Populate card content
         current_card = -1
@@ -1116,7 +1133,7 @@ class QuestionDirective(SphinxDirective):
                 ":::{grid-item-card}",
                 ":shadow: lg",
                 ":class-card: option",
-                "+++",
+                "",
                 ":::",
             ])
         cards_markup.append("::::")
@@ -1128,6 +1145,7 @@ class QuestionDirective(SphinxDirective):
         )
         self.state.nested_parse(cards_markup, self.content_offset, options_section)
         node += options_section
+        self._add_card_slots(options_section)
 
         # icon style
         if node["variant"] == "single-select":
