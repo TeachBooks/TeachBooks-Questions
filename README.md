@@ -204,6 +204,9 @@ to provide feedback for when the user clicks the "Submit" button, based on wheth
 - `<MissedFeedback>`: Try again! You missed at least one correct option.
 - `<MissedAndIncorrectFeedback>`: Try again! You selected at least one incorrect option and missed at least one correct option.
 
+The `^^^` separator is part of the question syntax and remains supported
+independently of sphinx-design's legacy card separators.
+
 For these feedback options, the same rules apply for the content as for the feedback related to each option:
 - Multiple instances will be combined.
 - The content can be any code that can be parsed by Sphinx, including roles, directives and math.
