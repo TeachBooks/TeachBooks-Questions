@@ -11,7 +11,7 @@ Available are:
 - Questions without input fields or submit buttons, which can be used to provide information or ask reflective questions without the need for user input.
 
 ## Installation
-To install the Sphinx-Metadata-Figure extension, follow these steps:
+To install the TeachBooks Questions extension, follow these steps:
 
 **Step 1: Install the Package**
 
